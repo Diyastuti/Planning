@@ -457,7 +457,7 @@ with st.sidebar:
 if "msgs_layanan" not in st.session_state:
     st.session_state.msgs_layanan = [{
         "role": "bot",
-        "content": "Halo! Saya LERES 👋 Tanya aja soal bansos, KIS, KIP, atau layanan publik lainnya!",
+        "content": "Halo! Saya LERES 👋\nSaya siap membantu Anda menemukan informasi layanan publik yang valid, memahami prosedur, dan memverifikasi informasi berdasarkan sumber resmi pemerintah.",
         "urls": [], "chart_tag": "", "topic_text": ""
     }]
 
