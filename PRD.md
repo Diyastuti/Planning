@@ -1,5 +1,5 @@
 # Product Requirement Document (PRD)
-## Project: Asisten Pintar Komunitas (Penyedia Informasi Layanan Publik & Bantuan Valid)
+## Project: LERES - Layanan E-Government Rekomendasi dan Edukasi Smart (Penyedia Informasi Layanan Publik & Bantuan Valid)
 
 ---
 
@@ -9,7 +9,7 @@ Banyak warga masyarakat, khususnya di tingkat komunitas lokal, mengalami kesulit
 * **Prosedur yang Rumit:** Dokumen persyaratan dan alur birokrasi sulit dipahami oleh masyarakat umum, khususnya orang tua dan masyarakat dengan literasi digital rendah.
 * **Maraknya Hoaks:** Beredarnya informasi palsu (hoaks) mengenai bantuan sosial di grup chat (seperti WhatsApp) yang menimbulkan kebingungan dan kekhawatiran.
 
-Untuk mengatasi tantangan ini, proyek ini membangun sebuah **Asisten Pintar Komunitas** berbasis AI. Aplikasi ini bertindak sebagai chatbot satu pintu yang mengintegrasikan data resmi dari pemerintah (seperti `data.go.id`) dan database lokal untuk memberikan jawaban valid, merangkum persyaratan dengan bahasa sederhana, memverifikasi berita hoaks, dan memitigasi risiko disinformasi melalui prinsip Responsible AI.
+Untuk mengatasi tantangan ini, proyek ini membangun **LERES** (**Layanan E-Government Rekomendasi dan Edukasi Smart**), sebuah asisten pintar komunitas berbasis AI. Aplikasi ini bertindak sebagai chatbot satu pintu yang mengintegrasikan data resmi dari pemerintah (yang mencakup portal `.go.id`) dan database lokal untuk memberikan jawaban valid, merangkum persyaratan dengan bahasa sederhana, memverifikasi berita hoaks, dan memitigasi risiko disinformasi melalui prinsip Responsible AI.
 
 ---
 
@@ -70,7 +70,7 @@ Untuk mengatasi tantangan ini, proyek ini membangun sebuah **Asisten Pintar Komu
 * **Framework Web & UI:** Streamlit (untuk pembuatan antarmuka web interaktif dengan cepat).
 * **Pemrosesan Data:** Pandas (untuk membaca, menyaring, dan memproses file dataset CSV/JSON dari `data.go.id` atau DB lokal).
 * **Visualisasi Grafik:** Matplotlib / Seaborn (untuk plotting diagram statistik).
-* **Model AI:** Google Gemini API (`gemini-1.5-flash` atau `gemini-1.5-pro` via SDK `google-generativeai`) untuk penalaran (reasoning), klasifikasi keluhan, penyederhanaan teks, dan verifikasi hoaks.
+* **Model AI:** Google Gemini API (`gemini-3.5-flash` via SDK `google-generativeai`) untuk penalaran (reasoning), klasifikasi keluhan, penyederhanaan teks, dan verifikasi hoaks.
 * **Manajemen Environment:** `python-dotenv` untuk mengamankan API key di file `.env`.
 
 ### Kebutuhan Non-Fungsional (Non-Functional Requirements)

@@ -1,5 +1,5 @@
 # Task List (Rencana Kerja & Checklist)
-## Project: Asisten Pintar Komunitas
+## Project: LERES - Layanan E-Government Rekomendasi dan Edukasi Smart
 
 Gunakan checklist ini untuk melacak progres pengembangan aplikasi dari awal hingga selesai. Berikan tanda `[x]` pada tugas yang sudah diselesaikan.
 

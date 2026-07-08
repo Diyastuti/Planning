@@ -1,5 +1,5 @@
 # Panduan Pengembangan (Development Guidelines)
-## Project: Asisten Pintar Komunitas
+## Project: LERES - Layanan E-Government Rekomendasi dan Edukasi Smart
 
 Panduan ini berisi standar teknis, arsitektur proyek, konfigurasi UI/UX, dan panduan keamanan untuk memandu proses pengembangan aplikasi.
 
