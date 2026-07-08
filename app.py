@@ -119,83 +119,97 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     font-size:.65rem;font-weight:700;color:#64748B;
     text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px 0;}
 
-/* ── History: switch button = card itself ── */
+/* ── ChatGPT-style history rows ── */
+/* Main history block acts as the hoverable row */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) {
+    border-radius: 8px;
+    margin: 0 0 1px 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    transition: background .15s;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type):hover {
+    background: rgba(99,102,241,0.10);
+}
+
+/* Strip default padding from column wrappers inside history rows */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"] {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"] > div {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+}
+
+/* Main item button — full area, text-style, no border */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     text-align: left !important;
-    padding: 8px 10px !important;
-    min-height: 52px !important;
+    padding: 7px 8px !important;
     height: auto !important;
-    line-height: 1.5 !important;
+    min-height: 42px !important;
+    line-height: 1.4 !important;
     white-space: pre-line !important;
-    font-size: .72rem !important;
+    font-size: .74rem !important;
     justify-content: flex-start !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-}
-/* Inactive — dark card look */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="secondary"] {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
     color: #CBD5E1 !important;
-    box-shadow: none !important;
+    transition: color .15s !important;
+    margin: 0 !important;
+    width: 100% !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="secondary"]:hover {
-    background: #1a2744 !important;
-    border-color: #6366F1 !important;
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button:hover {
+    background: transparent !important;
     color: #F8FAFC !important;
     box-shadow: none !important;
 }
-/* Active — purple accent */
+/* Active item */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="primary"] {
-    background: #1e1f4a !important;
-    border: 1px solid #6366F1 !important;
     color: #F8FAFC !important;
-    box-shadow: none !important;
+    font-weight: 600 !important;
+    border-left: 3px solid #6366F1 !important;
+    padding-left: 7px !important;
 }
 
-/* ── History: delete button ── */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-height: 52px !important;
+/* Delete button — hidden by default, shown on row hover */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child > div,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child > div > div {
     height: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    font-size: 1.1rem !important;
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
-    border-radius: 8px !important;
-    color: #EF4444 !important;
-    box-shadow: none !important;
-    transition: background .2s, border-color .2s, color .2s !important;
-}
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button *,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button * {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
     margin: 0 !important;
     padding: 0 !important;
-    line-height: 1 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    gap: 0 !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:hover,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:hover {
-    background: #1a2744 !important;
-    border-color: #EF4444 !important;
-    color: #EF4444 !important;
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button {
+    background: transparent !important;
+    border: none !important;
     box-shadow: none !important;
+    color: transparent !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    padding: 4px 6px !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 !important;
+    margin: 0 !important;
+    transition: color .15s, background .15s !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:focus,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:focus,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:active,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:active {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
-    box-shadow: none !important;
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type):hover [data-testid="column"]:last-child button {
+    color: #64748B !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:hover {
     color: #EF4444 !important;
+    background: rgba(239,68,68,.15) !important;
 }
 
 /* ── Navigation: Chat LERES (Green) ── */
@@ -787,8 +801,8 @@ with st.sidebar:
     key_opts = list(API_KEYS_VALID.keys())
     if key_opts:
         sel_lbl = st.selectbox("model:", key_opts, key="selected_api_key_label")
-        
-        st.warning("\u26a0\ufe0f Isi API key di app.py")
+    else:
+        st.warning("⚠️ Isi API key di app.py")
 
     st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
 
@@ -810,14 +824,12 @@ with st.sidebar:
     st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
 
     if st.session_state.page == "chat":
-        # Tombol Chat Baru
         if st.button("📝 Chat Baru", use_container_width=True, key="btn_new_chat"):
             _create_new_session()
             st.rerun()
 
         st.markdown("<div class='section-label'>Riwayat Percakapan</div>", unsafe_allow_html=True)
 
-        # Daftar sesi dari DB
         all_sessions = db_get_sessions()
         active_sid   = st.session_state.active_session
 
@@ -827,26 +839,21 @@ with st.sidebar:
             for sess in all_sessions:
                 sid       = sess["id"]
                 is_active = sid == active_sid
-                icon = "💬" if is_active else "📝"
+                icon      = "💬" if is_active else "📝"
+                label     = f"{icon} {sess['title']}\n{sess['created_at']}"
 
-                col_hist, col_del = st.columns([5, 1])
-                with col_hist:
-                    # Button IS the card — label: 2 baris (judul + tanggal)
-                    label = f"{icon} {sess['title']}\n{sess['created_at']}"
-                    if st.button(label, key=f"sw_{sid}",
-                                 use_container_width=True,
+                col_sw, col_del = st.columns([5, 1], gap="small")
+                with col_sw:
+                    if st.button(label, key=f"sw_{sid}", use_container_width=True,
                                  type="primary" if is_active else "secondary"):
                         st.session_state.active_session = sid
                         st.rerun()
-
                 with col_del:
-                    if st.button("🗑️", key=f"del_{sid}",
-                                 use_container_width=True, help="Hapus sesi ini"):
+                    if st.button("✕", key=f"del_{sid}", use_container_width=True, help="Hapus"):
                         _delete_session(sid)
                         st.rerun()
 
     elif st.session_state.page == "hoax":
-        # Tombol Periksa Baru
         if st.button("🛡️ Periksa Baru", use_container_width=True, key="btn_new_hoax_check"):
             st.session_state.hoax_result = None
             st.session_state.hoax_statement = ""
@@ -854,7 +861,6 @@ with st.sidebar:
 
         st.markdown("<div class='section-label'>Riwayat Cek Hoaks</div>", unsafe_allow_html=True)
 
-        # Daftar cek hoaks dari DB
         all_hoax_checks = db_get_hoax_checks()
         active_stmt = st.session_state.get("hoax_statement", "")
 
@@ -862,30 +868,25 @@ with st.sidebar:
             st.markdown("<div style='color:#64748B;font-size:.72rem;text-align:center;padding:10px;'>Belum ada riwayat</div>", unsafe_allow_html=True)
         else:
             for hc in all_hoax_checks:
-                hc_id       = hc["id"]
-                is_active   = hc["statement"] == active_stmt and st.session_state.get("hoax_result") is not None
-                status      = hc["status"].upper()
-                icon        = "🔴" if status == "HOAKS" else ("🟢" if status == "VALID" else "🟡")
-                
-                # Truncate statement
-                title = hc["statement"][:25] + ("\u2026" if len(hc["statement"]) > 25 else "")
+                hc_id      = hc["id"]
+                is_active  = hc["statement"] == active_stmt and st.session_state.get("hoax_result") is not None
+                status     = hc["status"].upper()
+                icon       = "🔴" if status == "HOAKS" else ("🟢" if status == "VALID" else "🟡")
+                title      = hc["statement"][:28] + ("…" if len(hc["statement"]) > 28 else "")
+                label      = f"{icon} {title}\n{hc['created_at']}"
 
-                col_hist, col_del = st.columns([5, 1])
-                with col_hist:
-                    label = f"{icon} {title}\n{hc['created_at']}"
-                    if st.button(label, key=f"hc_sw_{hc_id}",
-                                 use_container_width=True,
+                col_sw, col_del = st.columns([5, 1], gap="small")
+                with col_sw:
+                    if st.button(label, key=f"hc_sw_{hc_id}", use_container_width=True,
                                  type="primary" if is_active else "secondary"):
                         st.session_state.hoax_statement = hc["statement"]
-                        st.session_state.hoax_result = hc
+                        st.session_state.hoax_result    = hc
                         st.rerun()
-
                 with col_del:
-                    if st.button("🗑️", key=f"hc_del_{hc_id}",
-                                 use_container_width=True, help="Hapus riwayat ini"):
+                    if st.button("✕", key=f"hc_del_{hc_id}", use_container_width=True, help="Hapus"):
                         db_delete_hoax_check(hc_id)
                         if active_stmt == hc["statement"]:
-                            st.session_state.hoax_result = None
+                            st.session_state.hoax_result    = None
                             st.session_state.hoax_statement = ""
                         st.rerun()
 
