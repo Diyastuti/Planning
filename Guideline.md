@@ -8,53 +8,33 @@ Panduan ini berisi standar teknis, arsitektur proyek, konfigurasi UI/UX, dan pan
 ## 1. Persiapan Lingkungan (Environment Setup)
 Ikuti langkah-langkah berikut untuk memulai lingkungan pengembangan lokal yang bersih dan konsisten:
 
-1. **Membuat Virtual Environment:**
-   ```bash
-   python -m venv venv
-   ```
-2. **Mengaktifkan Virtual Environment:**
-   * Windows (PowerShell): `.\venv\Scripts\Activate.ps1`
-   * Windows (CMD): `.\venv\Scripts\activate.bat`
-   * Linux/macOS: `source venv/bin/activate`
 3. **Instalasi Dependencies:**
-   Buat file `requirements.txt` dengan konten berikut:
+   Buat file `requirements.txt` dengan konten berikut untuk mendukung seluruh fitur chatbot LERES (UI, AI, Pemrosesan Data, Visualisasi, dan API):
    ```text
-   streamlit>=1.30.0
-   google-generativeai>=0.3.0
-   pandas>=2.0.0
-   matplotlib>=3.7.0
-   python-dotenv>=1.0.0
+   streamlit>=1.30.0          # Framework UI utama untuk membuat web app interaktif
+   google-generativeai>=0.3.0 # SDK resmi Google Gemini API untuk chatbot & analisis
+   pandas>=2.0.0              # Pengolahan database bantuan sosial (membaca CSV/Excel)
+   openpyxl>=3.1.0            # Engine pembaca file Excel (.xlsx) untuk Pandas jika dataset menggunakan Excel
+   matplotlib>=3.7.0          # Pembuatan visualisasi grafik statistik
+   seaborn>=0.12.0            # Mempercantik tampilan grafik dengan tema yang lebih modern
+   pillow>=10.0.0             # Pemrosesan gambar untuk logo/avatar di antarmuka Streamlit
+   numpy>=1.24.0              # Library komputasi numerik pendukung Pandas
+   requests>=2.31.0           # Melakukan request data eksternal/API jika diperlukan
    ```
-   Lalu jalankan instalasi:
+   Lalu jalankan instalasi menggunakan terminal:
    ```bash
    pip install -r requirements.txt
    ```
-4. **Konfigurasi Variabel Lingkungan:**
-   Buat file `.env` di root direktori untuk menyimpan API Key:
-   ```env
-   GEMINI_API_KEY=your_actual_gemini_api_key_here
-   ```
-   *Penting: Pastikan file `.env` telah ditambahkan ke `.gitignore` agar tidak terunggah ke repositori publik.*
 
 ---
 
 ## 2. Struktur Proyek (Directory Structure)
-Struktur folder disarankan dibuat modular agar pemisahan logika (data, AI, dan UI) menjadi jelas:
+Struktur folder dibuat sesederhana mungkin agar mudah dipahami, dikembangkan, dan dideploy:
 
 ```text
-├── .env                  # API Key & konfigurasi rahasia
-├── .gitignore            # Mengabaikan venv, .env, __pycache__, dll.
-├── app.py                # Titik masuk utama aplikasi Streamlit
-├── requirements.txt      # Daftar pustaka dependensi proyek
-├── README.md             # Dokumentasi ringkas proyek
-├── dataset/              # Folder untuk menyimpan dataset (CSV/JSON)
-│   └── bantuan_sosial.csv # Contoh dataset resmi (dari data.go.id / mock)
-├── utils/                # Modul utilitas
-│   ├── __init__.py
-│   ├── ai_helper.py      # Pengolahan LLM Gemini (Prompt, Chat, Verifikasi)
-│   └── data_helper.py    # Logika Pandas & Visualisasi Matplotlib
-└── config/               # Konfigurasi Streamlit & Tema
-    └── config.toml       # Pengaturan tema visual Streamlit
+├── app.py                # File utama Streamlit (Logika UI, Gemini API, Pandas, & Visualisasi)
+├── requirements.txt      # Daftar dependensi library
+└── README.md             # Panduan menjalankan aplikasi
 ```
 
 ---

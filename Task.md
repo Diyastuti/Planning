@@ -6,28 +6,25 @@ Gunakan checklist ini untuk melacak progres pengembangan aplikasi dari awal hing
 ---
 
 ## 🚀 FASE 1: Setup Proyek & Persiapan Data
-* [ ] **1.1. Inisialisasi Repositori & Folder**
-  * Buat struktur folder sesuai dengan [Guideline.md](file:///d:/21_KAMARUL%20ARIFIN%20MUZAFFAR_XI%20TJKT1_PIC/Planning/Guideline.md) (`dataset/`, `utils/`, `config/`).
-  * Buat file `.gitignore` untuk mengecualikan `.env`, `venv/`, dan cache file.
-* [ ] **1.2. Konfigurasi Lingkungan & Library**
-  * Buat virtual environment (venv) dan aktifkan.
-  * Tulis file `requirements.txt` dan instal semua dependensi.
-  * Buat file `.env` dan masukkan API Key Gemini yang valid.
-* [ ] **1.3. Penyiapan Dataset Layanan Publik**
-  * Unduh atau buat mock dataset berupa file `dataset/bantuan_sosial.csv` yang berisi kolom: `id`, `nama_bantuan`, `kategori`, `deskripsi`, `persyaratan`, `prosedur_klaim`, `instansi_terkait`, `kontak_resmi`, `tautan_sumber`.
-  * Buat file `dataset/hoaks_db.csv` yang berisi daftar berita hoaks yang sering beredar beserta penjelasannya untuk pencocokan cepat.
+* [ ] **1.1. Inisialisasi Repositori & Berkas**
+  * Buat berkas utama proyek di root direktori sesuai [Guideline.md](file:///d:/21_KAMARUL%20ARIFIN%20MUZAFFAR_XI%20TJKT1_PIC/Planning/Guideline.md): `app.py`, `dataset_bantuan.csv`, `requirements.txt`.
+  * Buat file `.gitignore` untuk mengecualikan `venv/` dan file cache compiler.
+* [ ] **1.2. Konfigurasi Lingkungan & API KEY**
+  * Tulis file `requirements.txt` dengan library yang diperlukan (Streamlit, Gemini API, Pandas, Matplotlib, NumPy, Requests, pillow, openpyxl, seaborn).
+  * Siapkan daftar 3 API KEY Google AI Studio di dalam kode untuk rotasi cadangan kuota agar tidak mudah terkena limit.
+  * Tambahkan juga baris data khusus untuk contoh isu hoaks yang sering beredar beserta penjelasan klarifikasinya untuk pencocokan cepat.
 
 ---
 
-## 🧠 FASE 2: Modul Data & Utilitas AI
-* [ ] **2.1. Helper Pemrosesan Data (`utils/data_helper.py`)**
-  * Tulis fungsi `load_dataset()` dengan decorator caching dari Streamlit.
+## 🧠 FASE 2: Pemrosesan Data & Utilitas AI (Integrasi di `app.py`)
+* [ ] **2.1. Pemrosesan Data Pandas**
+  * Tulis fungsi `load_dataset()` dengan decorator caching `@st.cache_data` untuk membaca `dataset_bantuan.csv`.
   * Tulis fungsi pencarian berbasis kata kunci (keyword matching) sebagai backup jika API Gemini mengalami kegagalan.
-  * Implementasikan fungsi pengolahan data untuk statistik bantuan (misal: menghitung jumlah bantuan per kategori).
-* [ ] **2.2. Helper Integrasi Gemini AI (`utils/ai_helper.py`)**
-  * Setup inisialisasi SDK `google-generativeai` dengan API Key dari variabel lingkungan.
-  * Buat fungsi `get_gemini_response(prompt: str, context: str)` untuk memproses chatbot dengan grounding data.
-  * Buat fungsi `verify_claim_with_gemini(claim: str, reference_data: str)` untuk proses cek hoaks.
+  * Implementasikan pengolahan data menggunakan Pandas untuk menghitung statistik program bantuan (misal: jumlah program per kategori) sebagai bahan visualisasi.
+* [ ] **2.2. Integrasi & Rotasi API Gemini**
+  * Buat mekanisme inisialisasi SDK `google-generativeai` dengan sistem rotasi 3 API Key (mencoba Key 1, jika limit pindah ke Key 2, dst).
+  * Tulis fungsi `get_gemini_response(prompt: str, context: str)` dengan grounding data dari CSV.
+  * Tulis fungsi `verify_claim_with_gemini(claim: str, reference_data: str)` untuk proses klasifikasi & analisis hoaks.
 
 ---
 
