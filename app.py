@@ -474,8 +474,8 @@ def db_create_session(sid, title="Percakapan Baru"):
                (session_id, role, content, urls, chart_tag, hoax_tag, topic_text, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
             (sid, "bot",
-             "Halo! Saya **LERES** \u2014 asisten layanan publik kamu \U0001f44b\n\n"
-             "Mau tanya soal bansos, cek hoaks, atau minta grafik data? Langsung aja!",
+             "Halo! Saya LERES \u2014 asisten layanan publik kamu :D\n\n"
+             "Mau informasi yang valid? Yuk tanya si LERES!",
              "[]", "", "", "", now)
         )
 
@@ -643,8 +643,8 @@ with st.sidebar:
 # ==========================================
 # 12. CHAT PAGE
 # ==========================================
-st.title("\U0001f6e1\ufe0f LERES Chatbot")
-st.caption("Asisten Pintar Layanan Publik \u2022 Cek Bansos \u2022 Verifikasi Hoaks \u2022 Grafik Data")
+st.title("\U0001f6e1\ufe0f LERES AI")
+st.caption("Asisten Pintar Layanan Publik \u2022 Informasi Valid & Terpercaya")
 
 # Render semua pesan dari sesi aktif (baca dari DB)
 active_msgs = db_get_messages(st.session_state.active_session)
@@ -684,7 +684,7 @@ for i, msg in enumerate(active_msgs):
 # ==========================================
 # 13. CHAT INPUT PROCESSING
 # ==========================================
-user_input = st.chat_input("Tanya bansos, cek hoaks, minta grafik\u2026")
+user_input = st.chat_input("Tanya LERES AI\u2026")
 
 if user_input:
     st.markdown(f'<div class="cb-user">{user_input}</div>', unsafe_allow_html=True)
