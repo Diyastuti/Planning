@@ -110,7 +110,7 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     text-transform:uppercase;letter-spacing:.08em;margin:8px 0 4px 0;}
 
 /* ── History: switch button = card itself ── */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child button {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button {
     text-align: left !important;
     padding: 8px 10px !important;
     min-height: 52px !important;
@@ -124,20 +124,20 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     align-items: flex-start !important;
 }
 /* Inactive — dark card look */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child button[kind="secondary"] {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="secondary"] {
     background: #0F172A !important;
     border: 1px solid #334155 !important;
     color: #CBD5E1 !important;
     box-shadow: none !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child button[kind="secondary"]:hover {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="secondary"]:hover {
     background: #1a2744 !important;
     border-color: #6366F1 !important;
     color: #F8FAFC !important;
     box-shadow: none !important;
 }
 /* Active — purple accent */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:first-child button[kind="primary"] {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="primary"] {
     background: #1e1f4a !important;
     border: 1px solid #6366F1 !important;
     color: #F8FAFC !important;
@@ -145,12 +145,15 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 }
 
 /* ── History: delete button ── */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child button {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     min-height: 52px !important;
     height: 52px !important;
     width: 100% !important;
     padding: 0 !important;
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
     background: #1E293B !important;
     border: 1px solid #334155 !important;
     border-radius: 8px !important;
@@ -158,10 +161,85 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     box-shadow: none !important;
     transition: background .2s, border-color .2s !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] [data-testid="column"]:last-child button:hover {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button div,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button p {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:hover {
     background: rgba(239,68,68,.15) !important;
     border-color: #EF4444 !important;
     box-shadow: none !important;
+}
+
+/* ── Navigation: Chat LERES (Green) ── */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="secondary"] {
+    background: #0F172A !important;
+    border: 1px solid #334155 !important;
+    color: #10B981 !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="primary"] {
+    background: #10B981 !important;
+    border: none !important;
+    color: #FFFFFF !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button:hover {
+    background: #059669 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.45) !important;
+}
+
+/* ── Navigation: Cek Hoaks (Red) ── */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="secondary"] {
+    background: #0F172A !important;
+    border: 1px solid #334155 !important;
+    color: #EF4444 !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="primary"] {
+    background: #EF4444 !important;
+    border: none !important;
+    color: #FFFFFF !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button:hover {
+    background: #DC2626 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.45) !important;
+}
+
+/* ── Hoax Checker Styles ── */
+.hoax-card {
+    background: #1E293B !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-top: 15px !important;
+    margin-bottom: 15px !important;
+}
+.hoax-statement {
+    background: #0F172A !important;
+    border-left: 4px solid #6366F1 !important;
+    padding: 12px 16px !important;
+    border-radius: 4px 8px 8px 4px !important;
+    font-style: italic !important;
+    color: #CBD5E1 !important;
+    margin-bottom: 15px !important;
+}
+.hoax-explanation {
+    line-height: 1.6 !important;
+    color: #F8FAFC !important;
+    font-size: 0.92rem !important;
+}
+.hoax-section-title {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    color: #94A3B8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    margin-top: 18px !important;
+    margin-bottom: 8px !important;
 }
 
 </style>
@@ -188,7 +266,7 @@ def run_gemini(prompt, system="", json_mode=False):
     last_err = RuntimeError("Semua model gagal.")
     for key in keys:
         genai.configure(api_key=key)
-        for model_name in ["gemini-3.5-flash", "gemini-3.5-flash-latest", "gemini-pro"]:
+        for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-latest", "gemini-pro"]:
             try:
                 mdl = genai.GenerativeModel(
                     model_name=model_name,
@@ -200,6 +278,50 @@ def run_gemini(prompt, system="", json_mode=False):
                 last_err = e
                 continue
     raise last_err
+
+# ==========================================
+# 3b. HOAX CHECKER HELPER
+# ==========================================
+def verify_hoax(statement: str) -> dict:
+    sys_prompt = """Kamu adalah LERES Hoax Checker, agen AI yang bertugas memverifikasi kebenaran informasi, berita, atau klaim seputar layanan publik, bantuan sosial (bansos), kesehatan, pendidikan, dan pemerintahan di Indonesia.
+
+Tugasmu adalah menganalisis pernyataan dari user dan menentukan apakah pernyataan tersebut HOAKS, VALID, atau BUTUH KLARIFIKASI.
+
+Kamu HARUS merespon dalam format JSON dengan struktur persis seperti berikut:
+{
+  "status": "HOAKS" | "VALID" | "BUTUH KLARIFIKASI",
+  "explanation": "Penjelasan rinci, obyektif, logis, dan mudah dipahami dalam bahasa Indonesia santai namun sopan.",
+  "sources": ["https://sumber1.go.id", "https://sumber2.go.id"],
+  "admin_contact": {
+    "name": "Nama Instansi / Kategori Terkait",
+    "whatsapp": "62895605210076",
+    "phone": "159",
+    "portal": "https://kominfo.go.id"
+  }
+}
+
+Ketentuan:
+1. "status" hanya boleh bernilai "HOAKS", "VALID", atau "BUTUH KLARIFIKASI".
+2. "sources" WAJIB berupa website resmi pemerintah Indonesia yang mengandung domain `.go.id`. Dilarang keras menggunakan website berita umum (seperti detik.com, kompas.com, dll), blog, atau domain non-pemerintah lainnya. Jika tidak ada URL halaman spesifik, gunakan URL portal utama instansi pemerintah terkait (misalnya kemensos.go.id, bpjs-kesehatan.go.id, kemdikbud.go.id, kominfo.go.id, data.go.id).
+3. Hubungkan dengan kontak instansi yang paling relevan (misal Kemendikbud 177 untuk KIP, Kemensos 171 untuk PKH, BPJS Kesehatan 165, Kominfo 159, dll).
+"""
+    try:
+        response_text = run_gemini(statement, system=sys_prompt, json_mode=True)
+        data = json.loads(response_text)
+        return data
+    except Exception as e:
+        return {
+            "status": "BUTUH KLARIFIKASI",
+            "explanation": f"Gagal memverifikasi otomatis menggunakan AI: {str(e)}. Silakan hubungi admin LERES atau instansi resmi untuk konfirmasi.",
+            "sources": ["https://data.go.id"],
+            "admin_contact": {
+                "name": "Admin LERES / Kominfo",
+                "whatsapp": "62895605210076",
+                "phone": "159",
+                "portal": "https://kominfo.go.id"
+            }
+        }
+
 
 # ==========================================
 # 4. CKAN HARVESTER
@@ -474,8 +596,7 @@ def db_create_session(sid, title="Percakapan Baru"):
                (session_id, role, content, urls, chart_tag, hoax_tag, topic_text, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
             (sid, "bot",
-             "Halo! Saya LERES \u2014 asisten layanan publik kamu :D\n\n"
-             "Mau informasi yang valid? Yuk tanya si LERES!",
+             "Halo! Saya LERES AI, Mau informasi yang valid? Yuk tanya si LERES!"
              "[]", "", "", "", now)
         )
 
@@ -602,46 +723,171 @@ with st.sidebar:
 
     st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
 
-    # Tombol Chat Baru
-    if st.button("\u270f\ufe0f Chat Baru", use_container_width=True, key="btn_new_chat"):
-        _create_new_session()
-        st.rerun()
+    # Menu Navigasi
+    if "page" not in st.session_state:
+        st.session_state.page = "chat"
 
-    st.markdown("<div class='section-label'>Riwayat Percakapan</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-label'>Menu Aplikasi</div>", unsafe_allow_html=True)
+    col_nav1, col_nav2 = st.columns(2)
+    with col_nav1:
+        if st.button("💬 Chat LERES", use_container_width=True, type="primary" if st.session_state.page == "chat" else "secondary", key="nav_chat"):
+            st.session_state.page = "chat"
+            st.rerun()
+    with col_nav2:
+        if st.button("🛡️ Cek Hoaks", use_container_width=True, type="primary" if st.session_state.page == "hoax" else "secondary", key="nav_hoax"):
+            st.session_state.page = "hoax"
+            st.rerun()
 
-    # Daftar sesi dari DB
-    all_sessions = db_get_sessions()
-    active_sid   = st.session_state.active_session
+    st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
 
-    if not all_sessions:
-        st.markdown("<div style='color:#64748B;font-size:.72rem;text-align:center;padding:10px;'>Belum ada riwayat</div>", unsafe_allow_html=True)
-    else:
-        for sess in all_sessions:
-            sid       = sess["id"]
-            is_active = sid == active_sid
-            icon = "\U0001f4ac" if is_active else "\U0001f5d2\ufe0f"
+    if st.session_state.page == "chat":
+        # Tombol Chat Baru
+        if st.button("📝 Chat Baru", use_container_width=True, key="btn_new_chat"):
+            _create_new_session()
+            st.rerun()
 
-            col_hist, col_del = st.columns([5, 1])
-            with col_hist:
-                # Button IS the card — label: 2 baris (judul + tanggal)
-                label = f"{icon} {sess['title']}\n{sess['created_at']}"
-                if st.button(label, key=f"sw_{sid}",
-                             use_container_width=True,
-                             type="primary" if is_active else "secondary"):
-                    st.session_state.active_session = sid
-                    st.rerun()
+        st.markdown("<div class='section-label'>Riwayat Percakapan</div>", unsafe_allow_html=True)
 
-            with col_del:
-                if st.button("\U0001f5d1", key=f"del_{sid}",
-                             use_container_width=True, help="Hapus sesi ini"):
-                    _delete_session(sid)
-                    st.rerun()
+        # Daftar sesi dari DB
+        all_sessions = db_get_sessions()
+        active_sid   = st.session_state.active_session
+
+        if not all_sessions:
+            st.markdown("<div style='color:#64748B;font-size:.72rem;text-align:center;padding:10px;'>Belum ada riwayat</div>", unsafe_allow_html=True)
+        else:
+            for sess in all_sessions:
+                sid       = sess["id"]
+                is_active = sid == active_sid
+                icon = "💬" if is_active else "📝"
+
+                col_hist, col_del = st.columns([5, 1])
+                with col_hist:
+                    # Button IS the card — label: 2 baris (judul + tanggal)
+                    label = f"{icon} {sess['title']}\n{sess['created_at']}"
+                    if st.button(label, key=f"sw_{sid}",
+                                 use_container_width=True,
+                                 type="primary" if is_active else "secondary"):
+                        st.session_state.active_session = sid
+                        st.rerun()
+
+                with col_del:
+                    if st.button("🗑️", key=f"del_{sid}",
+                                 use_container_width=True, help="Hapus sesi ini"):
+                        _delete_session(sid)
+                        st.rerun()
 
 
 
 
 # ==========================================
-# 12. CHAT PAGE
+# 12. HOAX CHECKER PAGE
+# ==========================================
+if st.session_state.get("page") == "hoax":
+    st.title("🛡️ LERES Hoax Checker")
+    st.caption("Cek dan verifikasi kebenaran informasi seputar layanan publik dan bantuan sosial")
+
+    # Input form
+    st.markdown("""
+        <div style='background:#1E293B; padding:15px; border-radius:8px; border:1px solid #334155; margin-bottom:15px;'>
+            <h4 style='margin:0; color:#F8FAFC;'>Masukkan Klaim / Berita</h4>
+            <p style='margin:5px 0 0 0; font-size:0.8rem; color:#94A3B8;'>Tempelkan pernyataan atau pesan berantai yang Anda terima untuk memverifikasi kebenarannya.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Inisialisasi session state untuk menyimpan input & hasil
+    if "hoax_result" not in st.session_state:
+        st.session_state.hoax_result = None
+    if "hoax_statement" not in st.session_state:
+        st.session_state.hoax_statement = ""
+
+    claim_input = st.text_area("Pernyataan / Isu:", value=st.session_state.hoax_statement, height=150, placeholder="Contoh: Pemerintah bagi-bagi bantuan sosial PKH sebesar 5 juta rupiah lewat website bansos-pkh.blogspot.com...", key="claim_input_area")
+
+    col_btn1, col_btn2 = st.columns([1, 4])
+    with col_btn1:
+        verify_clicked = st.button("🔍 Verifikasi", use_container_width=True, type="primary")
+    with col_btn2:
+        if st.button("🧹 Bersihkan", use_container_width=True, key="clear_hoax_btn"):
+            st.session_state.hoax_result = None
+            st.session_state.hoax_statement = ""
+            st.rerun()
+
+    if verify_clicked and claim_input.strip():
+        st.session_state.hoax_statement = claim_input
+        with st.spinner("Sedang memverifikasi pernyataan dengan AI..."):
+            result = verify_hoax(claim_input)
+            st.session_state.hoax_result = result
+            st.rerun()
+
+    # Tampilkan hasil verifikasi jika ada
+    if st.session_state.hoax_result:
+        res = st.session_state.hoax_result
+        status = res.get("status", "BUTUH KLARIFIKASI").upper()
+        explanation = res.get("explanation", "")
+        # Filter hanya URL yang mengandung .go.id
+        sources = [u for u in res.get("sources", []) if u and ".go.id" in u.lower()][:3]
+        if not sources:
+            inst = detect_instansi(st.session_state.hoax_statement)
+            if inst and inst.get("portal") and ".go.id" in inst["portal"].lower():
+                sources = [inst["portal"]]
+            else:
+                sources = ["https://kominfo.go.id", "https://data.go.id"]
+        admin = res.get("admin_contact", {})
+
+        # Tentukan badge & kelas CSS status
+        bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
+        badge_text = "🔴 HOAKS" if status == "HOAKS" else ("🟢 VALID" if status == "VALID" else "🟡 BUTUH KLARIFIKASI")
+
+        st.markdown("<hr style='margin:20px 0; border-color:#334155;'>", unsafe_allow_html=True)
+        st.subheader("Hasil Verifikasi")
+
+        # Tampilkan pernyataan asal
+        st.markdown(f"""
+            <div class="hoax-section-title">Pernyataan yang Diperiksa</div>
+            <div class="hoax-statement">"{st.session_state.hoax_statement}"</div>
+        """, unsafe_allow_html=True)
+
+        # Card detail penjelasan
+        st.markdown(f"""
+            <div class="hoax-card">
+                <div style="margin-bottom: 12px;">
+                    <span class="badge {bclass}" style="font-size: 1rem; padding: 4px 12px;">{badge_text}</span>
+                </div>
+                <div class="hoax-section-title">Analisis & Penjelasan</div>
+                <div class="hoax-explanation">{explanation}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Tombol Referensi
+        st.markdown("<div class='hoax-section-title'>Sumber Referensi Resmi</div>", unsafe_allow_html=True)
+        col_srcs = st.columns(len(sources))
+        for idx, src_url in enumerate(sources):
+            btn_lbl = get_button_label(src_url)
+            with col_srcs[idx]:
+                st.link_button(btn_lbl, src_url, key=f"hoax_src_{idx}", use_container_width=True)
+
+        # Informasi Kontak Admin
+        st.markdown("<div class='hoax-section-title'>Hubungi Admin & Laporkan</div>", unsafe_allow_html=True)
+        
+        wa_number = admin.get("whatsapp", "62895605210076")
+        admin_name = admin.get("name", "Layanan Aduan LERES / Kominfo")
+        phone_number = admin.get("phone", "159")
+        portal = admin.get("portal", "https://kominfo.go.id")
+
+        whatsapp_msg = f"Halo Admin LERES/Kominfo,\n\nSaya ingin melaporkan/menanyakan informasi berikut:\n\n\"{st.session_state.hoax_statement}\"\n\nMenurut verifikasi sistem LERES statusnya adalah: *{status}*.\nMohon info/tindak lanjut lebih lanjut. Terima kasih."
+        whatsapp_url = f"https://wa.me/{wa_number}?text={urllib.parse.quote(whatsapp_msg)}"
+
+        col_admin1, col_admin2, col_admin3 = st.columns(3)
+        with col_admin1:
+            st.link_button("📱 Laporkan ke WA Admin", whatsapp_url, key="hoax_wa_report", use_container_width=True)
+        with col_admin2:
+            st.link_button(f"🌐 Portal Resmi ({admin_name})", portal, key="hoax_portal", use_container_width=True)
+        with col_admin3:
+            st.link_button(f"📞 Call Center: {phone_number}", f"tel:{phone_number}", key="hoax_phone_call", use_container_width=True)
+
+    st.stop()
+
+# ==========================================
+# 13. CHAT PAGE
 # ==========================================
 st.title("\U0001f6e1\ufe0f LERES AI")
 st.caption("Asisten Pintar Layanan Publik \u2022 Informasi Valid & Terpercaya")
