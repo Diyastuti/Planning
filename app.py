@@ -15,6 +15,7 @@ import urllib.parse
 import glob
 import hashlib
 import streamlit.components.v1 as components
+import base64
 from datetime import datetime
 from contextlib import contextmanager
 # pyrefly: ignore [missing-import]
@@ -761,13 +762,13 @@ _init_app()
 # 11. SIDEBAR \u2014 dengan history permanen
 # ==========================================
 with st.sidebar:
+    # Encode logo sebagai base64 untuk ditampilkan di HTML
+    with open("assets/logolers-Photoroom.png", "rb") as _f:
+        _logo_b64 = base64.b64encode(_f.read()).decode()
     st.markdown(
         "<div style='text-align:center;padding:12px 10px;background:#0F172A;border-radius:12px;"
         "border:1px solid #334155;margin-bottom:10px;'>"
-        "<span style='font-size:1.8rem'>\U0001f6e1\ufe0f</span><br>"
-        "<b style='font-size:1.1rem;color:#F8FAFC;letter-spacing:0.5px;'>LERES</b><br>"
-        "<div style='color:#94A3B8;font-size:.68rem;margin-top:2px;'>"
-        "Layanan E-Government Rekomendasi &amp; Edukasi Smart</div>"
+        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'>"
         "</div>",
         unsafe_allow_html=True
     )
@@ -777,7 +778,7 @@ with st.sidebar:
     key_opts = list(API_KEYS_VALID.keys())
     if key_opts:
         sel_lbl = st.selectbox("model:", key_opts, key="selected_api_key_label")
-    else:
+        
         st.warning("\u26a0\ufe0f Isi API key di app.py")
 
     st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
@@ -886,7 +887,19 @@ with st.sidebar:
 # 12. HOAX CHECKER PAGE
 # ==========================================
 if st.session_state.get("page") == "hoax":
-    st.title("🛡️ LERES Hoax Checker")
+    # Encode logo sebagai base64 untuk ditampilkan di title
+    with open("assets/LOGOCH.png", "rb") as _f:
+        _logo_hx_b64 = base64.b64encode(_f.read()).decode()
+
+    st.markdown(
+        f"""
+        <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+            <img src="data:image/png;base64,{_logo_hx_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
+            <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES Hoax Checker</h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     st.caption("Cek dan verifikasi kebenaran informasi seputar layanan publik dan bantuan sosial")
 
     # Input form
@@ -1000,7 +1013,19 @@ if st.session_state.get("page") == "hoax":
 # ==========================================
 # 13. CHAT PAGE
 # ==========================================
-st.title("\U0001f6e1\ufe0f LERES AI")
+# Encode logo sebagai base64 untuk ditampilkan di title
+with open("assets/LOGOCH.png", "rb") as _f:
+    _logo_main_b64 = base64.b64encode(_f.read()).decode()
+
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+        <img src="data:image/png;base64,{_logo_main_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
+        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES AI</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.caption("Asisten Pintar Layanan Publik \u2022 Informasi Valid & Terpercaya")
 
 # Render semua pesan dari sesi aktif (baca dari DB)
