@@ -63,9 +63,18 @@ st.markdown("""
 section[data-testid="stSidebar"]{
     background:#1E293B!important;
     border-right:1px solid #334155;
+    height:100vh!important;
+    transition: width 0.3s ease !important;
+}
+section[data-testid="stSidebar"][aria-expanded="true"]{
     min-width:240px!important;
     max-width:260px!important;
-    height:100vh!important;
+}
+section[data-testid="stSidebar"][aria-expanded="false"]{
+    min-width:0!important;
+    max-width:0!important;
+    overflow:hidden!important;
+    border-right:none!important;
 }
 section[data-testid="stSidebar"] > div:first-child{
     overflow-y:auto!important;
