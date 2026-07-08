@@ -145,34 +145,47 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 }
 
 /* ── History: delete button ── */
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     min-height: 52px !important;
-    height: 52px !important;
+    height: 100% !important;
     width: 100% !important;
     padding: 0 !important;
     font-size: 1.1rem !important;
-    background: #1E293B !important;
+    background: #0F172A !important;
     border: 1px solid #334155 !important;
     border-radius: 8px !important;
     color: #EF4444 !important;
     box-shadow: none !important;
-    transition: background .2s, border-color .2s !important;
+    transition: background .2s, border-color .2s, color .2s !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button div,
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button p {
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button *,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button * {
     margin: 0 !important;
     padding: 0 !important;
+    line-height: 1 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 }
-[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:hover {
-    background: rgba(239,68,68,.15) !important;
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:hover,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:hover {
+    background: #1a2744 !important;
     border-color: #EF4444 !important;
+    color: #EF4444 !important;
     box-shadow: none !important;
+}
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:focus,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:focus,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:last-child button:active,
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:nth-of-type(2) button:active {
+    background: #0F172A !important;
+    border: 1px solid #334155 !important;
+    box-shadow: none !important;
+    color: #EF4444 !important;
 }
 
 /* ── Navigation: Chat LERES (Green) ── */
@@ -572,6 +585,15 @@ def db_init():
                 topic_text  TEXT DEFAULT '',
                 created_at  TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS hoax_checks (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                statement     TEXT NOT NULL,
+                status        TEXT NOT NULL,
+                explanation   TEXT NOT NULL,
+                sources       TEXT NOT NULL DEFAULT '[]',
+                admin_contact TEXT NOT NULL DEFAULT '{}',
+                created_at    TEXT NOT NULL
+            );
             CREATE INDEX IF NOT EXISTS idx_msgs_session ON messages(session_id);
         """)
 
@@ -596,7 +618,7 @@ def db_create_session(sid, title="Percakapan Baru"):
                (session_id, role, content, urls, chart_tag, hoax_tag, topic_text, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
             (sid, "bot",
-             "Halo! Saya LERES AI, Mau informasi yang valid? Yuk tanya si LERES!"
+             "Halo! Saya LERES AI, Mau informasi yang valid? Yuk tanya si LERES!",
              "[]", "", "", "", now)
         )
 
@@ -650,6 +672,43 @@ def db_session_title_is_default(session_id):
     with _db() as conn:
         row = conn.execute("SELECT title FROM sessions WHERE id = ?", (session_id,)).fetchone()
     return row and row["title"] == "Percakapan Baru"
+
+def db_add_hoax_check(statement, status, explanation, sources=None, admin_contact=None):
+    """Simpan hasil cek hoaks ke database."""
+    now = datetime.now().strftime("%d %b %Y, %H:%M")
+    sources_json = json.dumps(sources or [])
+    admin_json = json.dumps(admin_contact or {})
+    with _db() as conn:
+        conn.execute(
+            """INSERT INTO hoax_checks (statement, status, explanation, sources, admin_contact, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (statement, status, explanation, sources_json, admin_json, now)
+        )
+
+def db_get_hoax_checks():
+    """Ambil semua riwayat cek hoaks, urut terbaru dulu."""
+    with _db() as conn:
+        rows = conn.execute(
+            "SELECT id, statement, status, explanation, sources, admin_contact, created_at FROM hoax_checks ORDER BY id DESC"
+        ).fetchall()
+    result = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["sources"] = json.loads(d["sources"])
+        except Exception:
+            d["sources"] = []
+        try:
+            d["admin_contact"] = json.loads(d["admin_contact"])
+        except Exception:
+            d["admin_contact"] = {}
+        result.append(d)
+    return result
+
+def db_delete_hoax_check(hid):
+    """Hapus satu riwayat cek hoaks."""
+    with _db() as conn:
+        conn.execute("DELETE FROM hoax_checks WHERE id = ?", (hid,))
 
 # ==========================================
 # 10. SESSION STATE HELPERS
@@ -776,6 +835,50 @@ with st.sidebar:
                         _delete_session(sid)
                         st.rerun()
 
+    elif st.session_state.page == "hoax":
+        # Tombol Periksa Baru
+        if st.button("🛡️ Periksa Baru", use_container_width=True, key="btn_new_hoax_check"):
+            st.session_state.hoax_result = None
+            st.session_state.hoax_statement = ""
+            st.rerun()
+
+        st.markdown("<div class='section-label'>Riwayat Cek Hoaks</div>", unsafe_allow_html=True)
+
+        # Daftar cek hoaks dari DB
+        all_hoax_checks = db_get_hoax_checks()
+        active_stmt = st.session_state.get("hoax_statement", "")
+
+        if not all_hoax_checks:
+            st.markdown("<div style='color:#64748B;font-size:.72rem;text-align:center;padding:10px;'>Belum ada riwayat</div>", unsafe_allow_html=True)
+        else:
+            for hc in all_hoax_checks:
+                hc_id       = hc["id"]
+                is_active   = hc["statement"] == active_stmt and st.session_state.get("hoax_result") is not None
+                status      = hc["status"].upper()
+                icon        = "🔴" if status == "HOAKS" else ("🟢" if status == "VALID" else "🟡")
+                
+                # Truncate statement
+                title = hc["statement"][:25] + ("\u2026" if len(hc["statement"]) > 25 else "")
+
+                col_hist, col_del = st.columns([5, 1])
+                with col_hist:
+                    label = f"{icon} {title}\n{hc['created_at']}"
+                    if st.button(label, key=f"hc_sw_{hc_id}",
+                                 use_container_width=True,
+                                 type="primary" if is_active else "secondary"):
+                        st.session_state.hoax_statement = hc["statement"]
+                        st.session_state.hoax_result = hc
+                        st.rerun()
+
+                with col_del:
+                    if st.button("🗑️", key=f"hc_del_{hc_id}",
+                                 use_container_width=True, help="Hapus riwayat ini"):
+                        db_delete_hoax_check(hc_id)
+                        if active_stmt == hc["statement"]:
+                            st.session_state.hoax_result = None
+                            st.session_state.hoax_statement = ""
+                        st.rerun()
+
 
 
 
@@ -816,6 +919,14 @@ if st.session_state.get("page") == "hoax":
         with st.spinner("Sedang memverifikasi pernyataan dengan AI..."):
             result = verify_hoax(claim_input)
             st.session_state.hoax_result = result
+            # Save verified hoax to the database history
+            db_add_hoax_check(
+                statement=claim_input,
+                status=result.get("status", "BUTUH KLARIFIKASI"),
+                explanation=result.get("explanation", ""),
+                sources=result.get("sources", []),
+                admin_contact=result.get("admin_contact", {})
+            )
             st.rerun()
 
     # Tampilkan hasil verifikasi jika ada
@@ -923,7 +1034,7 @@ for i, msg in enumerate(active_msgs):
                 if status in ("HOAKS", "BUTUH KLARIFIKASI"):
                     txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
                     st.link_button("\U0001f4f2 Laporkan ke Kominfo (WA)",
-                                   f"https://wa.me/6281111111111?text={txt}", key=f"wa_{i}")
+                                   f"https://wa.me/62895605210076?text={txt}", key=f"wa_{i}")
             except Exception:
                 pass
 
