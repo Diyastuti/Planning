@@ -71,10 +71,9 @@ Untuk mengatasi tantangan ini, proyek ini membangun **LERES** (**Layanan E-Gover
 * **Pemrosesan Data:** Pandas (untuk membaca, menyaring, dan memproses file dataset CSV/JSON dari `data.go.id` atau DB lokal).
 * **Visualisasi Grafik:** Matplotlib / Seaborn (untuk plotting diagram statistik).
 * **Model AI:** Google Gemini API (`gemini-3.5-flash` via SDK `google-generativeai`) untuk penalaran (reasoning), klasifikasi keluhan, penyederhanaan teks, dan verifikasi hoaks.
-* **Manajemen Environment:** `python-dotenv` untuk mengamankan API key di file `.env`.
+* **API_KEY:** Mengguunakan API KEY dari Google AI Studio. Kemudian di taruh hardcore untuk memudahkan deploy. Di sediakan 3 API KEY agar tidak terjadi limit quota.
 
 ### Kebutuhan Non-Fungsional (Non-Functional Requirements)
-1. **Keamanan Data (Security):** API Key Gemini tidak boleh ditulis langsung di kode sumber (*hardcoded*) dan harus dimuat melalui variabel lingkungan.
-2. **Kinerja (Performance):** Respon chatbot rata-rata harus selesai dalam waktu kurang dari 5 detik.
-3. **Desain Antarmuka (UI/UX):** Mengikuti prinsip responsif, ramah seluler, menggunakan tipografi yang jelas (Inter/Roboto), kontras warna yang baik (aksesibilitas), serta navigasi sidebar yang intuitif.
-4. **Akurasi & Grounding (Fidelity):** Sistem harus mengutamakan data dari file lokal/dataset resmi (`data.go.id`) dan menghindari halusinasi dengan menolak menjawab jika topik di luar cakupan informasi layanan publik/bantuan sosial yang valid.
+1. **Kinerja (Performance):** Respon chatbot rata-rata harus selesai dalam waktu kurang dari 5 detik.
+2. **Desain Antarmuka (UI/UX):** Mengikuti prinsip responsif, ramah seluler, menggunakan tipografi yang jelas (Inter/Roboto), kontras warna yang baik (aksesibilitas), serta navigasi sidebar yang intuitif.
+3. **Akurasi & Grounding (Fidelity):** Sistem harus mengutamakan data dari file lokal/dataset resmi (`data.go.id`) dan menghindari halusinasi dengan menolak menjawab jika topik di luar cakupan informasi layanan publik/bantuan sosial yang valid.
