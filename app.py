@@ -814,8 +814,8 @@ ATURAN:
                     st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
                     if status in ("HOAKS", "BUTUH KLARIFIKASI"):
                         txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                        st.link_button("\U0001f4f2 Laporkan ke Kominfo (WA)",
-                                       f"https://wa.me/6281111111111?text={txt}", key="wa_new")
+                        st.link_button(" Laporkan ke Admin (WA)",
+                                       f"https://wa.me/62895605210076?text={txt}", key="wa_new")
                 except Exception:
                     pass
 
