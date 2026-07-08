@@ -590,19 +590,7 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    components.html("""
-    <div id="clk" style="font-size:.72rem;font-weight:600;font-family:monospace;
-        color:#10B981;background:#0F172A;border:1px solid #334155;
-        padding:6px 8px;border-radius:6px;text-align:center;"></div>
-    <script>
-      function tick(){
-        const n=new Date();
-        document.getElementById('clk').innerText=n.toLocaleString('id-ID',
-          {day:'numeric',month:'short',year:'numeric',
-           hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-      }
-      setInterval(tick,1000);tick();
-    </script>""", height=32)
+    
 
     st.markdown("<div style='margin-bottom:10px;'></div>", unsafe_allow_html=True)
 
