@@ -83,7 +83,7 @@ section[data-testid="stSidebar"] .stSelectbox label{font-size:.73rem!important;}
 section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;font-size:.75rem!important;}
 
 .cb-user{
-    background:#6366F1;color:#fff;
+    background:#b76216;color:#fff;
     padding:10px 14px;border-radius:16px 16px 2px 16px;
     margin:6px 0 6px 18%;line-height:1.5;}
 .cb-bot{
