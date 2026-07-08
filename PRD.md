@@ -70,7 +70,7 @@ Untuk mengatasi tantangan ini, proyek ini membangun sebuah **Asisten Pintar Komu
 * **Framework Web & UI:** Streamlit (untuk pembuatan antarmuka web interaktif dengan cepat).
 * **Pemrosesan Data:** Pandas (untuk membaca, menyaring, dan memproses file dataset CSV/JSON dari `data.go.id` atau DB lokal).
 * **Visualisasi Grafik:** Matplotlib / Seaborn (untuk plotting diagram statistik).
-* **Model AI:** Google Gemini API (`gemini-1.5-flash` atau `gemini-1.5-pro` via SDK `google-generativeai`) untuk penalaran (reasoning), klasifikasi keluhan, penyederhanaan teks, dan verifikasi hoaks.
+* **Model AI:** Google Gemini API (`gemini-3.5-flash` via SDK `google-generativeai`) untuk penalaran (reasoning), klasifikasi keluhan, penyederhanaan teks, dan verifikasi hoaks.
 * **Manajemen Environment:** `python-dotenv` untuk mengamankan API key di file `.env`.
 
 ### Kebutuhan Non-Fungsional (Non-Functional Requirements)
