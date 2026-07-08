@@ -736,10 +736,21 @@ ATURAN:
                 api_error = e
 
         if api_error is not None:
-            st.error(f"\u26a0\ufe0f Gagal hubungi AI: {api_error}")
-            fallback = "Maaf, ada gangguan ke AI. Coba ganti API Key di sidebar ya!"
+            err_str = str(api_error).lower()
+            is_quota = "429" in err_str or "resource exhausted" in err_str or "quota" in err_str
+            if is_quota:
+                fallback = (
+                    "\u26a0\ufe0f Model sedang over-limit (429 Resource Exhausted).\n\n"
+                    "Silakan ganti model di dropdown model: di sidebar, lalu kirim ulang pertanyaanmu ya!"
+                )
+            else:
+                fallback = (
+                    f"\u26a0\ufe0f Gagal hubungi AI: `{api_error}`\n\n"
+                    "Coba ganti model di sidebar atau coba lagi sebentar."
+                )
             st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
-            _append_bot(fallback, urls=["https://data.go.id"])
+            _append_bot(fallback)
+
 
         elif raw is None:
             fallback = "Hmm, nggak dapat respons dari AI. Coba lagi ya!"
