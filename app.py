@@ -474,8 +474,7 @@ def db_create_session(sid, title="Percakapan Baru"):
                (session_id, role, content, urls, chart_tag, hoax_tag, topic_text, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
             (sid, "bot",
-             "Halo! Saya **LERES** \u2014 asisten layanan publik kamu \U0001f44b\n\n"
-             "Mau tanya soal bansos, cek hoaks, atau minta grafik data? Langsung aja!",
+             "Selamat datang di LERES. Sampaikan kebutuhan atau pertanyaan Anda, dan kami akan membantu menemukan informasi layanan publik yang sesuai berdasarkan sumber resmi.",
              "[]", "", "", "", now)
         )
 
@@ -643,8 +642,8 @@ with st.sidebar:
 # ==========================================
 # 12. CHAT PAGE
 # ==========================================
-st.title("\U0001f6e1\ufe0f LERES Chatbot")
-st.caption("Asisten Pintar Layanan Publik \u2022 Cek Bansos \u2022 Verifikasi Hoaks \u2022 Grafik Data")
+st.title("\U0001f6e1\ufe0f LERES AI")
+st.caption("Temukan Informasi Layanan Publik Resmi dengan Cepat dan Mudah")
 
 # Render semua pesan dari sesi aktif (baca dari DB)
 active_msgs = db_get_messages(st.session_state.active_session)
