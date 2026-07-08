@@ -15,6 +15,7 @@ import glob
 import hashlib
 import streamlit.components.v1 as components
 from datetime import datetime
+import plotly.express as px
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -238,6 +239,18 @@ KATA_KASAR = {
 def is_rude(text):
     return any(re.search(rf"\b{w}\b", text.lower()) for w in KATA_KASAR)
 
+def get_button_label(url):
+    try:
+        parsed = urllib.parse.urlparse(url)
+        netloc = parsed.netloc or parsed.path.split('/')[0]
+        if netloc.startswith("www."):
+            netloc = netloc[4:]
+        if ".go.id" in netloc.lower():
+            return f"🌐 Sumber Resmi Pemerintah ({netloc})"
+        return f"🌐 Sumber Resmi ({netloc})"
+    except Exception:
+        return "🌐 Sumber Resmi Pemerintah (.go.id)"
+
 # ==========================================
 # 7. CHART RENDERER — ukuran kompak (#20)
 # ==========================================
@@ -261,39 +274,49 @@ def render_chart(tag_json):
     except Exception:
         return False
 
-    plt.style.use("dark_background")
-    # ↓ figsize lebih kecil: (6, 3) menggantikan (8, 4)
-    fig, ax = plt.subplots(figsize=(5.5, 3))
-    fig.patch.set_facecolor("#1E293B")
-    ax.set_facecolor("#1E293B")
-    ax.tick_params(colors="#94A3B8", labelsize=8)
-    for spine in ax.spines.values():
-        spine.set_color("#334155")
+    df = pd.DataFrame({
+        "Kategori": labels,
+        "Jumlah": values
+    })
+
+    theme_layout = {
+        "paper_bgcolor": "#1E293B",
+        "plot_bgcolor": "#1E293B",
+        "font": {"color": "#F8FAFC", "family": "Inter, sans-serif"},
+        "margin": {"l": 40, "r": 20, "t": 40, "b": 45},
+        "title": {"font": {"size": 12, "color": "#F8FAFC", "weight": "bold"}},
+        "xaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
+        "yaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
+    }
 
     if ctype == "line":
-        ax.plot(labels, values, marker="o", color="#6366F1", linewidth=2)
-        ax.fill_between(range(len(labels)), values, alpha=.15, color="#6366F1")
+        fig = px.line(df, x="Kategori", y="Jumlah", title=title, markers=True)
+        fig.update_traces(line=dict(color="#6366F1", width=2.5), marker=dict(size=7, color="#818CF8"))
     elif ctype == "pie":
-        ax.pie(values, labels=labels, autopct="%1.1f%%",
-               startangle=140, colors=sns.color_palette("plasma", len(labels)),
-               textprops={"fontsize": 8})
-    else:
-        bars = ax.bar(labels, values, color=sns.color_palette("plasma", len(labels)))
-        ax.bar_label(bars, fmt="%.0f", color="#F8FAFC", padding=2, fontsize=8)
+        fig = px.pie(df, names="Kategori", values="Jumlah", title=title, 
+                     color_discrete_sequence=px.colors.sequential.Plasma_r)
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+    else: # bar
+        fig = px.bar(df, x="Kategori", y="Jumlah", title=title,
+                     color_discrete_sequence=["#6366F1"])
+        fig.update_traces(marker_line_color='#818CF8', marker_line_width=1, opacity=0.9)
 
-    ax.set_title(title, fontsize=10, fontweight="bold", color="#F8FAFC", pad=8)
+    fig.update_layout(**theme_layout)
     if xlabel:
-        ax.set_xlabel(xlabel, color="#94A3B8", fontsize=8)
+        fig.update_xaxes(title_text=xlabel, title_font={"size": 10, "color": "#94A3B8"})
+    else:
+        fig.update_xaxes(title_text=None)
     if ylabel:
-        ax.set_ylabel(ylabel, color="#94A3B8", fontsize=8)
-    plt.xticks(rotation=25, ha="right", color="#94A3B8", fontsize=7)
-    plt.tight_layout(pad=1.0)
+        fig.update_yaxes(title_text=ylabel, title_font={"size": 10, "color": "#94A3B8"})
+    else:
+        fig.update_yaxes(title_text=None)
+
+    fig.update_layout(width=480, height=280)
 
     # Render dalam kolom agar tidak full-width
-    col_chart, _ = st.columns([1, 1])
+    col_chart, _ = st.columns([2, 1])
     with col_chart:
-        st.pyplot(fig, use_container_width=False)
-    plt.close(fig)
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     return True
 
 # ==========================================
@@ -370,21 +393,21 @@ def render_contact_button(combined_text, key_suffix=""):
 # 9. SIDEBAR — compact, no scroll (#21)
 # ==========================================
 with st.sidebar:
-    # Header singkat (tanpa gambar besar)
+    # Logo & Deskripsi Instansi
     st.markdown(
-        "<div style='text-align:center;padding:4px 0'>"
+        "<div style='text-align:center;padding:12px 10px;background:#0F172A;border-radius:12px;border:1px solid #334155;margin-bottom:10px;'>"
         "<span style='font-size:1.8rem'>🛡️</span><br>"
-        "<b style='font-size:1rem;color:#F8FAFC'>LERES</b><br>"
-        "<small style='color:#94A3B8;font-size:.68rem'>E-Gov Smart Assistant</small>"
+        "<b style='font-size:1.1rem;color:#F8FAFC;letter-spacing:0.5px;'>LERES</b><br>"
+        "<div style='color:#94A3B8;font-size:.68rem;margin-top:2px;'>Layanan E-Government Rekomendasi & Edukasi Smart</div>"
         "</div>",
         unsafe_allow_html=True
     )
 
-    # Jam real-time — inline, height minimal
+    # Jam Realtime
     components.html("""
     <div id="clk" style="font-size:.72rem;font-weight:600;font-family:monospace;
         color:#10B981;background:#0F172A;border:1px solid #334155;
-        padding:4px 8px;border-radius:6px;text-align:center;margin:4px 0"></div>
+        padding:6px 8px;border-radius:6px;text-align:center;"></div>
     <script>
       function tick(){
         const n=new Date();
@@ -395,28 +418,22 @@ with st.sidebar:
       setInterval(tick,1000);tick();
     </script>""", height=32)
 
-    st.divider()
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
-    # API Key — label singkat supaya fit
+    # API Key Selector
     key_opts = list(API_KEYS_VALID.keys())
     if key_opts:
-        sel_lbl = st.selectbox("🔑 API Key aktif:", key_opts, key="selected_api_key_label", label_visibility="visible")
+        sel_lbl = st.selectbox("🔑 API Key Aktif:", key_opts, key="selected_api_key_label")
         kv = API_KEYS_VALID[sel_lbl]
         masked = f"{kv[:4]}…{kv[-4:]}"
-        st.markdown(f"<small style='color:#10B981'>✅ {masked}</small>", unsafe_allow_html=True)
+        st.markdown(f"<div style='background:#0F172A;padding:6px 10px;border-radius:6px;border:1px solid #334155;margin-top:4px;'><span style='color:#10B981;font-size:.72rem;font-weight:600;'>✅ {masked}</span></div>", unsafe_allow_html=True)
     else:
         st.warning("⚠️ Isi API key di app.py")
 
-    st.divider()
+    st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
-    # Unduh data
-    if st.button("🔄 Unduh data.go.id"):
-        bar = st.empty()
-        n = harvest_datagoid(progress_fn=lambda m: bar.caption(m))
-        bar.empty()
-        st.success(f"✅ {n} file")
-
-    if st.button("🗑️ Hapus Riwayat"):
+    # Hapus Riwayat Chat
+    if st.button("🗑️ Hapus Riwayat Chat", use_container_width=True):
         st.session_state.msgs = [{
             "role": "bot",
             "content": (
@@ -428,7 +445,7 @@ with st.sidebar:
         st.rerun()
 
     n_local = len(get_local_files())
-    st.markdown(f"<small style='color:#64748B'>📂 {n_local} file lokal tersedia</small>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center;margin-top:auto;padding-top:15px;color:#64748B;font-size:.7rem;'>📂 {n_local} database lokal aktif</div>", unsafe_allow_html=True)
 
 # ==========================================
 # 10. CHAT PAGE
@@ -467,7 +484,7 @@ for i, msg in enumerate(st.session_state.msgs):
             render_chart(msg["chart_tag"])
 
         for j, u in enumerate((msg.get("urls") or [])[:3]):
-            lbl = "🌐 Sumber Resmi (.go.id)" if ".go.id" in u else "🌐 Lihat Sumber"
+            lbl = get_button_label(u)
             st.link_button(lbl, u, key=f"src_{i}_{j}")
 
         # Tombol hubungi hanya jika ada topik relevan
@@ -528,7 +545,8 @@ WAKTU: {datetime.now().strftime('%d %B %Y %H:%M')}
 GAYA: jawab singkat & kasual. Kalau user curhat/galau, validasi dulu sebelum kasih solusi. Jangan sapaan ulang.
 
 ATURAN:
-1. Jangan tempel URL mentah di jawaban. Taruh sumber di [SOURCES:["url1","url2"]] di akhir.
+1. Jangan tempel URL mentah di jawaban. Taruh sumber resmi di [SOURCES:["https://sumber1.go.id","https://sumber2.go.id"]] di akhir.
+   Setiap URL wajib merupakan website resmi pemerintah Indonesia yang mengandung `.go.id` (contoh: https://data.go.id, https://cekbansos.kemensos.go.id, https://kip-kuliah.kemdikbud.go.id, https://bpjs-kesehatan.go.id). Jangan gunakan domain non-pemerintah.
 2. Hoaks: tambahkan [HOAKS_CHECK:{{"claim":"...","status":"HOAKS"|"VALID"|"BUTUH KLARIFIKASI"}}]
 3. Grafik: {"WAJIB buat grafik karena user minta! " if needs_viz else ""}Kalau ada angka yang cocok divisualisasikan, tambahkan:
    [CHART:{{"title":"...","type":"bar"|"line"|"pie","labels":[...],"values":[angka_murni],"xlabel":"...","ylabel":"..."}}]
@@ -587,6 +605,9 @@ ATURAN:
                 for u in raw_urls:
                     raw = raw.replace(u, "")
 
+            # Filter hanya link resmi pemerintah yang mengandung .go.id
+            sources = [u for u in sources if ".go.id" in u.lower()]
+
             if not sources:
                 sources = [src_url]
 
@@ -602,7 +623,7 @@ ATURAN:
             # Tombol sumber
             unique_srcs = list(dict.fromkeys(sources))[:3]
             for j, u in enumerate(unique_srcs):
-                lbl = "🌐 Sumber Resmi (.go.id)" if ".go.id" in u else "🌐 Lihat Sumber"
+                lbl = get_button_label(u)
                 st.link_button(lbl, u, key=f"src_new_{j}")
 
             # Tombol hubungi instansi — kontekstual berdasarkan topik (#22)
