@@ -26,9 +26,9 @@ os.makedirs(FOLDER_TARGET, exist_ok=True)
 # 1. API KEYS
 # ==========================================
 API_KEYS_DICT = {
-    # "🔑 Key 1 (Utama)":      "",
-    # "🔑 Key 2 (Cadangan 1)": "",
-    # "🔑 Key 3 (Cadangan 2)": "",
+    "🔑 Key 1 (Utama)":     st.secrets["API_KEY_1"],
+    # "🔑 Key 2 (Cadangan 1)": "MASUKKAN_API_KEY_2_DI_SINI",
+    # "🔑 Key 3 (Cadangan 2)": "MASUKKAN_API_KEY_3_DI_SINI",
 }
 API_KEYS_VALID = {
     lbl: k for lbl, k in API_KEYS_DICT.items()
