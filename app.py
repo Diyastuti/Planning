@@ -232,12 +232,14 @@ def mock_context(query):
 # 6. PROFANITY FILTER
 # ==========================================
 KATA_KASAR = {
-    "anjing","babi","bangsat","bajingan","goblok","tolol",
-    "kontol","memek","brengsek","ngentot","jancok","ndasmu",
-    "fuck","shit","asshole","bitch","damn"
+    "anjing", "babi", "bangsat", "bajingan", "goblok", "tolol",
+    "kontol", "memek", "brengsek", "ngentot", "jancok", "ndasmu",
+    "fuck", "shit", "asshole", "bitch", "damn", "lonte", "perek",
+    "keparat", "bego"
 }
 def is_rude(text):
-    return any(re.search(rf"\b{w}\b", text.lower()) for w in KATA_KASAR)
+    tl = text.lower()
+    return any(w in tl for w in KATA_KASAR)
 
 def get_button_label(url):
     try:
@@ -432,15 +434,17 @@ with st.sidebar:
 
     st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
-    # Hapus Riwayat Chat
+    # Hapus Riwayat Chat — reset keduanya
     if st.button("🗑️ Hapus Riwayat Chat", use_container_width=True):
-        st.session_state.msgs = [{
+        st.session_state.msgs_layanan = [{
             "role": "bot",
-            "content": (
-                "Halo! Saya **LERES** — asisten layanan publik kamu 👋\n\n"
-                "Mau tanya soal bansos, cek hoaks, atau minta grafik data? Langsung aja!"
-            ),
-            "urls": [], "chart_tag": "", "hoax_tag": "", "topic_text": ""
+            "content": "Halo! Saya LERES 👋 Tanya aja soal bansos, KIS, KIP, atau layanan publik lainnya!",
+            "urls": [], "chart_tag": "", "topic_text": ""
+        }]
+        st.session_state.msgs_hoaks = [{
+            "role": "bot",
+            "content": "Halo! Di sini kamu bisa tempel informasi yang mau dicek kebenarannya. Aku akan bandingkan dengan data resmi pemerintah. 🔍",
+            "urls": [], "hoax_tag": ""
         }]
         st.rerun()
 
@@ -448,201 +452,353 @@ with st.sidebar:
     st.markdown(f"<div style='text-align:center;margin-top:auto;padding-top:15px;color:#64748B;font-size:.7rem;'>📂 {n_local} database lokal aktif</div>", unsafe_allow_html=True)
 
 # ==========================================
-# 10. CHAT PAGE
+# 10. SESSION STATE INIT
 # ==========================================
-st.title("🛡️ LERES Chatbot")
-st.caption("Asisten Pintar Layanan Publik • Cek Bansos • Verifikasi Hoaks • Grafik Data")
-
-if "msgs" not in st.session_state:
-    st.session_state.msgs = [{
+if "msgs_layanan" not in st.session_state:
+    st.session_state.msgs_layanan = [{
         "role": "bot",
-        "content": (
-            "Halo! Saya **LERES** — asisten layanan publik kamu 👋\n\n"
-            "Mau tanya soal bansos, cek hoaks, atau minta grafik data? Langsung aja!"
-        ),
-        "urls": [], "chart_tag": "", "hoax_tag": "", "topic_text": ""
+        "content": "Halo! Saya LERES 👋 Tanya aja soal bansos, KIS, KIP, atau layanan publik lainnya!",
+        "urls": [], "chart_tag": "", "topic_text": ""
     }]
 
-def append_bot(content, urls=None, chart_tag="", hoax_tag="", topic_text=""):
-    st.session_state.msgs.append({
+if "msgs_hoaks" not in st.session_state:
+    st.session_state.msgs_hoaks = [{
+        "role": "bot",
+        "content": "Halo! Di sini kamu bisa tempel informasi yang mau dicek kebenarannya. Aku akan bandingkan dengan data resmi pemerintah. 🔍",
+        "urls": [], "hoax_tag": ""
+    }]
+
+def append_bot_layanan(content, urls=None, chart_tag="", topic_text=""):
+    st.session_state.msgs_layanan.append({
         "role": "bot", "content": content,
-        "urls": urls or [], "chart_tag": chart_tag, "hoax_tag": hoax_tag,
-        "topic_text": topic_text
+        "urls": urls or [], "chart_tag": chart_tag, "topic_text": topic_text
     })
 
-def append_user(content):
-    st.session_state.msgs.append({"role": "user", "content": content})
+def append_user_layanan(content):
+    st.session_state.msgs_layanan.append({"role": "user", "content": content})
 
-# Render history
-for i, msg in enumerate(st.session_state.msgs):
-    if msg["role"] == "user":
-        st.markdown(f'<div class="cb-user">{msg["content"]}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="cb-bot">{msg["content"]}</div>', unsafe_allow_html=True)
+def append_bot_hoaks(content, urls=None, hoax_tag=""):
+    st.session_state.msgs_hoaks.append({
+        "role": "bot", "content": content,
+        "urls": urls or [], "hoax_tag": hoax_tag
+    })
 
-        if msg.get("chart_tag"):
-            render_chart(msg["chart_tag"])
-
-        for j, u in enumerate((msg.get("urls") or [])[:3]):
-            lbl = get_button_label(u)
-            st.link_button(lbl, u, key=f"src_{i}_{j}")
-
-        # Tombol hubungi hanya jika ada topik relevan
-        topic_text = msg.get("topic_text", "")
-        if topic_text:
-            render_contact_button(topic_text, key_suffix=str(i))
-
-        # Badge & WA hoaks
-        hoax_tag = msg.get("hoax_tag", "")
-        if hoax_tag:
-            try:
-                hd     = json.loads(hoax_tag)
-                claim  = hd.get("claim", "")
-                status = hd.get("status", "HOAKS")
-                bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
-                if status in ("HOAKS", "BUTUH KLARIFIKASI"):
-                    txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                    st.link_button("📲 Laporkan ke Kominfo (WA)", f"https://wa.me/6281111111111?text={txt}", key=f"wa_{i}")
-            except Exception:
-                pass
+def append_user_hoaks(content):
+    st.session_state.msgs_hoaks.append({"role": "user", "content": content})
 
 # ==========================================
-# 11. CHAT INPUT PROCESSING
+# 11. TWO-TAB PAGES
 # ==========================================
-user_input = st.chat_input("Tanya bansos, cek hoaks, minta grafik…")
+st.markdown("""
+<style>
+/* Tab styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    background: #0F172A;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 0;
+}
+.stTabs [data-baseweb="tab"] {
+    background: #1E293B;
+    border-radius: 8px 8px 0 0 !important;
+    color: #94A3B8 !important;
+    font-weight: 600;
+    font-size: .9rem;
+    padding: 8px 20px !important;
+    border: 1px solid #334155;
+    border-bottom: none;
+}
+.stTabs [aria-selected="true"] {
+    background: #6366F1 !important;
+    color: #fff !important;
+    border-color: #6366F1 !important;
+}
+.stTabs [data-baseweb="tab-panel"] {
+    padding-top: 16px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-if user_input:
-    st.markdown(f'<div class="cb-user">{user_input}</div>', unsafe_allow_html=True)
-    append_user(user_input)
+tab_layanan, tab_hoaks = st.tabs(["💬  AI Layanan Publik", "🔍  Cek Fakta / Hoaks"])
 
-    # Moderasi
-    if is_rude(user_input):
-        warn = "Yuk gunakan bahasa yang sopan supaya aku bisa bantu dengan baik 😊"
-        st.markdown(f'<div class="cb-bot">{warn}</div>', unsafe_allow_html=True)
-        append_bot(warn)
-    else:
-        # Konteks data lokal
-        local_files = get_local_files()
-        ctx = ""
-        src_url = "https://data.go.id"
+# ══════════════════════════════════════════
+# TAB 1 — AI Layanan Publik
+# ══════════════════════════════════════════
+with tab_layanan:
+    st.markdown(
+        "<div style='margin-bottom:8px'>"
+        "<span style='font-size:1.3rem;font-weight:700;color:#F8FAFC;'>💬 Asisten Layanan Publik</span><br>"
+        "<span style='font-size:.8rem;color:#94A3B8;'>Tanya tentang bansos, KIS, KIP, prosedur, atau layanan pemerintah lainnya</span>"
+        "</div>",
+        unsafe_allow_html=True
+    )
 
-        matched = best_file(user_input, local_files)
-        if matched:
-            ctx = file_context(matched)
+    # Render history
+    for i, msg in enumerate(st.session_state.msgs_layanan):
+        if msg["role"] == "user":
+            st.markdown(f'<div class="cb-user">{msg["content"]}</div>', unsafe_allow_html=True)
         else:
-            ctx = mock_context(user_input)
+            st.markdown(f'<div class="cb-bot">{msg["content"]}</div>', unsafe_allow_html=True)
+            if msg.get("chart_tag"):
+                render_chart(msg["chart_tag"])
+            for j, u in enumerate((msg.get("urls") or [])[:3]):
+                st.link_button(get_button_label(u), u, key=f"lay_src_{i}_{j}")
+            topic_text = msg.get("topic_text", "")
+            if topic_text:
+                render_contact_button(topic_text, key_suffix=f"lay_{i}")
 
-        # Deteksi kebutuhan visualisasi
-        viz_kw = ["grafik","chart","diagram","visualisasi","tabel","perbandingan",
-                  "bandingkan","statistik","distribusi","jumlah","persen","proporsi","plot"]
-        needs_viz = any(kw in user_input.lower() for kw in viz_kw)
+    # Input
+    user_input_lay = st.chat_input("Tanya soal bansos, KIS, KIP, layanan publik…", key="input_layanan")
 
-        sys_prompt = f"""Kamu adalah LERES, asisten layanan publik yang santai, to-the-point, dan ramah kayak teman.
+    if user_input_lay:
+        st.markdown(f'<div class="cb-user">{user_input_lay}</div>', unsafe_allow_html=True)
+        append_user_layanan(user_input_lay)
+
+        if is_rude(user_input_lay):
+            warn = "Yuk gunakan bahasa yang sopan supaya aku bisa bantu dengan baik 😊"
+            st.markdown(f'<div class="cb-bot">{warn}</div>', unsafe_allow_html=True)
+            append_bot_layanan(warn)
+        else:
+            local_files = get_local_files()
+            src_url = "https://data.go.id"
+            ctx = ""
+            matched = best_file(user_input_lay, local_files)
+            if matched:
+                ctx = file_context(matched)
+            else:
+                ctx = mock_context(user_input_lay)
+
+            viz_kw = ["grafik","chart","diagram","visualisasi","tabel","perbandingan",
+                      "bandingkan","statistik","distribusi","jumlah","persen","proporsi","plot"]
+            needs_viz = any(kw in user_input_lay.lower() for kw in viz_kw)
+
+            sys_lay = f"""Kamu adalah LERES, asisten layanan publik yang santai, to-the-point, dan ramah kayak teman.
 
 WAKTU: {datetime.now().strftime('%d %B %Y %H:%M')}
 
 GAYA: jawab singkat & kasual. Kalau user curhat/galau, validasi dulu sebelum kasih solusi. Jangan sapaan ulang.
 
+FOKUS: Hanya menjawab pertanyaan seputar layanan publik dan bantuan sosial pemerintah Indonesia.
+Jika ada angka/data yang cocok divisualisasikan, buat grafik.
+
 ATURAN:
 1. Jangan tempel URL mentah di jawaban. Taruh sumber resmi di [SOURCES:["https://sumber1.go.id","https://sumber2.go.id"]] di akhir.
-   Setiap URL wajib merupakan website resmi pemerintah Indonesia yang mengandung `.go.id` (contoh: https://data.go.id, https://cekbansos.kemensos.go.id, https://kip-kuliah.kemdikbud.go.id, https://bpjs-kesehatan.go.id). Jangan gunakan domain non-pemerintah.
-2. Hoaks: tambahkan [HOAKS_CHECK:{{"claim":"...","status":"HOAKS"|"VALID"|"BUTUH KLARIFIKASI"}}]
-3. Grafik: {"WAJIB buat grafik karena user minta! " if needs_viz else ""}Kalau ada angka yang cocok divisualisasikan, tambahkan:
+   Setiap URL wajib domain pemerintah .go.id.
+2. {"WAJIB buat grafik! " if needs_viz else ""}Kalau ada angka divisualisasikan, tambahkan:
    [CHART:{{"title":"...","type":"bar"|"line"|"pie","labels":[...],"values":[angka_murni],"xlabel":"...","ylabel":"..."}}]
-   - values hanya angka (float/int), bukan string
-   - Kalau perbandingan, buat juga tabel markdown
-4. Konteks data:
-{ctx if ctx else "Tidak ada data lokal. Jawab dari pengetahuan umum kamu."}
+   values hanya angka (float/int).
+3. Konteks data:
+{ctx if ctx else "Tidak ada data lokal. Jawab dari pengetahuan umum."}
 """
 
-        raw = None
-        api_error = None
-        with st.spinner("Bentar ya…"):
-            try:
-                raw = run_gemini(user_input, sys_prompt)
-            except Exception as e:
-                api_error = e
-
-        if api_error is not None:
-            st.error(f"⚠️ Gagal hubungi AI: {api_error}")
-            fallback = "Maaf, ada gangguan ke AI. Coba ganti API Key di sidebar ya!"
-            st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
-            append_bot(fallback, urls=["https://data.go.id"])
-
-        elif raw is None:
-            fallback = "Hmm, nggak dapat respons dari AI. Coba lagi ya!"
-            st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
-            append_bot(fallback, urls=["https://data.go.id"])
-
-        else:
-            # Ekstrak tag khusus
-            chart_tag = ""
-            hoax_tag  = ""
-            sources   = []
-
-            cm = re.search(r'\[CHART:(\{.*?\})\]', raw, re.DOTALL)
-            if cm:
-                chart_tag = cm.group(1)
-                raw = raw[:cm.start()] + raw[cm.end():]
-
-            hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw, re.DOTALL)
-            if hm:
-                hoax_tag = hm.group(1)
-                raw = raw[:hm.start()] + raw[hm.end():]
-
-            sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw, re.DOTALL)
-            if sm:
+            raw = None
+            api_error = None
+            with st.spinner("Bentar ya…"):
                 try:
-                    sources = json.loads(sm.group(1))
-                except Exception:
-                    sources = []
-                raw = raw[:sm.start()] + raw[sm.end():]
+                    raw = run_gemini(user_input_lay, sys_lay)
+                except Exception as e:
+                    api_error = e
 
-            if not sources:
-                raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw)
-                sources  = [u.rstrip(".,;)\"]>") for u in raw_urls]
-                for u in raw_urls:
-                    raw = raw.replace(u, "")
+            if api_error is not None:
+                st.error(f"⚠️ Gagal hubungi AI: {api_error}")
+                fallback = "Maaf, ada gangguan ke AI. Coba ganti API Key di sidebar ya!"
+                st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
+                append_bot_layanan(fallback, urls=["https://data.go.id"])
+            elif raw is None:
+                fallback = "Hmm, nggak dapat respons dari AI. Coba lagi ya!"
+                st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
+                append_bot_layanan(fallback, urls=["https://data.go.id"])
+            else:
+                chart_tag = ""
+                sources   = []
 
-            # Filter hanya link resmi pemerintah yang mengandung .go.id
-            sources = [u for u in sources if ".go.id" in u.lower()]
+                cm = re.search(r'\[CHART:(\{.*?\})\]', raw, re.DOTALL)
+                if cm:
+                    chart_tag = cm.group(1)
+                    raw = raw[:cm.start()] + raw[cm.end():]
 
-            if not sources:
-                sources = [src_url]
+                sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw, re.DOTALL)
+                if sm:
+                    try:
+                        sources = json.loads(sm.group(1))
+                    except Exception:
+                        sources = []
+                    raw = raw[:sm.start()] + raw[sm.end():]
 
-            clean_resp = re.sub(r'\n{3,}', '\n\n', raw).strip()
+                if not sources:
+                    raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw)
+                    sources  = [u.rstrip(".,;)\"]>") for u in raw_urls]
+                    for u in raw_urls:
+                        raw = raw.replace(u, "")
 
-            # Tampilkan respons
-            st.markdown(f'<div class="cb-bot">{clean_resp}</div>', unsafe_allow_html=True)
+                sources = [u for u in sources if ".go.id" in u.lower()]
+                if not sources:
+                    sources = [src_url]
 
-            # Grafik (ukuran kompak)
-            if chart_tag:
-                render_chart(chart_tag)
+                clean_resp = re.sub(r'\n{3,}', '\n\n', raw).strip()
+                st.markdown(f'<div class="cb-bot">{clean_resp}</div>', unsafe_allow_html=True)
 
-            # Tombol sumber
-            unique_srcs = list(dict.fromkeys(sources))[:3]
-            for j, u in enumerate(unique_srcs):
-                lbl = get_button_label(u)
-                st.link_button(lbl, u, key=f"src_new_{j}")
+                if chart_tag:
+                    render_chart(chart_tag)
 
-            # Tombol hubungi instansi — kontekstual berdasarkan topik (#22)
-            topic_text = user_input + " " + clean_resp
-            render_contact_button(topic_text, key_suffix="new")
+                unique_srcs = list(dict.fromkeys(sources))[:3]
+                for j, u in enumerate(unique_srcs):
+                    st.link_button(get_button_label(u), u, key=f"lay_src_new_{j}")
 
-            # Badge & WA hoaks
+                topic_text = user_input_lay + " " + clean_resp
+                render_contact_button(topic_text, key_suffix="lay_new")
+
+                append_bot_layanan(clean_resp, urls=unique_srcs, chart_tag=chart_tag, topic_text=topic_text)
+
+# ══════════════════════════════════════════
+# TAB 2 — Cek Fakta / Hoaks
+# ══════════════════════════════════════════
+with tab_hoaks:
+    st.markdown(
+        "<div style='margin-bottom:8px'>"
+        "<span style='font-size:1.3rem;font-weight:700;color:#F8FAFC;'>🔍 Verifikasi Fakta & Cek Hoaks</span><br>"
+        "<span style='font-size:.8rem;color:#94A3B8;'>Tempel informasi yang ingin kamu verifikasi — AI akan cek ke data resmi pemerintah</span>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # Render history
+    for i, msg in enumerate(st.session_state.msgs_hoaks):
+        if msg["role"] == "user":
+            st.markdown(f'<div class="cb-user">{msg["content"]}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="cb-bot">{msg["content"]}</div>', unsafe_allow_html=True)
+            for j, u in enumerate((msg.get("urls") or [])[:3]):
+                st.link_button(get_button_label(u), u, key=f"hx_src_{i}_{j}")
+            hoax_tag = msg.get("hoax_tag", "")
             if hoax_tag:
                 try:
-                    hd     = json.loads(hoax_tag)
-                    claim  = hd.get("claim", "")
-                    status = hd.get("status", "HOAKS")
-                    bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                    st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
+                    hd          = json.loads(hoax_tag)
+                    claim       = hd.get("claim", "")
+                    status      = hd.get("status", "BUTUH KLARIFIKASI")
+                    reason      = hd.get("reason", "")
+                    bclass      = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
+                    icon        = "❌" if status == "HOAKS" else ("✅" if status == "VALID" else "⚠️")
+                    reason_html = f"<br><small style='color:#94A3B8;margin-top:6px;display:block;'>{reason}</small>" if reason else ""
+                    st.markdown(
+                        f"<div style='background:#0F172A;border:1px solid #334155;border-radius:10px;"
+                        f"padding:10px 14px;margin:6px 0;'>"
+                        f"<span class='badge {bclass}'>{icon} {status}</span>"
+                        f"{reason_html}"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
                     if status in ("HOAKS", "BUTUH KLARIFIKASI"):
                         txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                        st.link_button("📲 Laporkan ke Kominfo (WA)", f"https://wa.me/6281111111111?text={txt}", key="wa_new")
+                        st.link_button("📲 Laporkan ke Kominfo", f"https://wa.me/6281111111111?text={txt}", key=f"hx_wa_{i}")
                 except Exception:
                     pass
 
-            append_bot(clean_resp, urls=unique_srcs, chart_tag=chart_tag,
-                       hoax_tag=hoax_tag, topic_text=topic_text)
+    # Input
+    user_input_hx = st.chat_input("Tempel informasi / berita yang ingin dicek kebenarannya…", key="input_hoaks")
+
+    if user_input_hx:
+        st.markdown(f'<div class="cb-user">{user_input_hx}</div>', unsafe_allow_html=True)
+        append_user_hoaks(user_input_hx)
+
+        if is_rude(user_input_hx):
+            warn = "Yuk gunakan bahasa yang sopan supaya aku bisa bantu dengan baik 😊"
+            st.markdown(f'<div class="cb-bot">{warn}</div>', unsafe_allow_html=True)
+            append_bot_hoaks(warn)
+        else:
+            sys_hx = f"""Kamu adalah LERES, modul verifikasi fakta layanan publik berbasis data resmi pemerintah.
+
+WAKTU: {datetime.now().strftime('%d %B %Y %H:%M')}
+
+TUGAS: Analisis klaim atau informasi yang diberikan user. Bandingkan dengan data resmi pemerintah Indonesia.
+
+ATURAN:
+1. SELALU sertakan tag di akhir respons:
+   [HOAKS_CHECK:{{"claim":"<ringkasan klaim>","status":"HOAKS"|"VALID"|"BUTUH KLARIFIKASI","reason":"<alasan singkat 1-2 kalimat>"}}]
+2. Sertakan referensi sumber resmi pemerintah:
+   [SOURCES:["https://sumber1.go.id","https://sumber2.go.id"]]
+   Hanya domain .go.id yang diperbolehkan.
+3. Format jawaban:
+   - Ringkasan klaim yang dianalisis
+   - Poin-poin alasan (valid/tidak valid)
+   - Referensi instansi terkait
+4. Jika informasi menyebut domain non-.go.id, nilai itu sebagai indikasi HOAKS.
+5. Jawab singkat, jelas, dan mudah dipahami warga awam.
+"""
+
+            raw = None
+            api_error = None
+            with st.spinner("Sedang memverifikasi…"):
+                try:
+                    raw = run_gemini(user_input_hx, sys_hx)
+                except Exception as e:
+                    api_error = e
+
+            if api_error is not None:
+                st.error(f"⚠️ Gagal hubungi AI: {api_error}")
+                fallback = "Maaf, ada gangguan ke AI. Coba ganti API Key di sidebar ya!"
+                st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
+                append_bot_hoaks(fallback)
+            elif raw is None:
+                fallback = "Hmm, nggak dapat respons dari AI. Coba lagi ya!"
+                st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
+                append_bot_hoaks(fallback)
+            else:
+                hoax_tag = ""
+                sources  = []
+
+                hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw, re.DOTALL)
+                if hm:
+                    hoax_tag = hm.group(1)
+                    raw = raw[:hm.start()] + raw[hm.end():]
+
+                sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw, re.DOTALL)
+                if sm:
+                    try:
+                        sources = json.loads(sm.group(1))
+                    except Exception:
+                        sources = []
+                    raw = raw[:sm.start()] + raw[sm.end():]
+
+                if not sources:
+                    raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw)
+                    sources  = [u.rstrip(".,;)\"]>") for u in raw_urls]
+                    for u in raw_urls:
+                        raw = raw.replace(u, "")
+
+                sources = [u for u in sources if ".go.id" in u.lower()]
+                if not sources:
+                    sources = ["https://data.go.id", "https://kominfo.go.id"]
+
+                clean_resp = re.sub(r'\n{3,}', '\n\n', raw).strip()
+                st.markdown(f'<div class="cb-bot">{clean_resp}</div>', unsafe_allow_html=True)
+
+                unique_srcs = list(dict.fromkeys(sources))[:3]
+                for j, u in enumerate(unique_srcs):
+                    st.link_button(get_button_label(u), u, key=f"hx_src_new_{j}")
+
+                # Badge Verifikasi
+                if hoax_tag:
+                    try:
+                        hd          = json.loads(hoax_tag)
+                        claim       = hd.get("claim", "")
+                        status      = hd.get("status", "BUTUH KLARIFIKASI")
+                        reason      = hd.get("reason", "")
+                        bclass      = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
+                        icon        = "❌" if status == "HOAKS" else ("✅" if status == "VALID" else "⚠️")
+                        reason_html = f"<br><small style='color:#94A3B8;margin-top:6px;display:block;'>{reason}</small>" if reason else ""
+                        st.markdown(
+                            f"<div style='background:#0F172A;border:1px solid #334155;border-radius:10px;"
+                            f"padding:10px 14px;margin:6px 0;'>"
+                            f"<span class='badge {bclass}'>{icon} {status}</span>"
+                            f"{reason_html}"
+                            f"</div>",
+                            unsafe_allow_html=True
+                        )
+                        if status in ("HOAKS", "BUTUH KLARIFIKASI"):
+                            txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
+                            st.link_button("📲 Laporkan ke Kominfo", f"https://wa.me/6281111111111?text={txt}", key="hx_wa_new")
+                    except Exception:
+                        pass
+
+                append_bot_hoaks(clean_resp, urls=unique_srcs, hoax_tag=hoax_tag)
