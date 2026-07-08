@@ -31,7 +31,9 @@ os.makedirs(FOLDER_TARGET, exist_ok=True)
 # 1. API KEYS
 # ==========================================
 API_KEYS_DICT = {
-    "\U0001f511 Key 1 (Utama)": st.secrets["API_KEY_1"],
+    " Nusantara 1.0 ": st.secrets["API_KEY_1"],
+    " Nusantara 2.0 ": st.secrets["API_KEY_2"],
+    " Nusantara 3.0 ": st.secrets["API_KEY_3"],
     # "\U0001f511 Key 2 (Cadangan 1)": "MASUKKAN_API_KEY_2_DI_SINI",
 }
 API_KEYS_VALID = {
@@ -590,34 +592,11 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    components.html("""
-    <div id="clk" style="font-size:.72rem;font-weight:600;font-family:monospace;
-        color:#10B981;background:#0F172A;border:1px solid #334155;
-        padding:6px 8px;border-radius:6px;text-align:center;"></div>
-    <script>
-      function tick(){
-        const n=new Date();
-        document.getElementById('clk').innerText=n.toLocaleString('id-ID',
-          {day:'numeric',month:'short',year:'numeric',
-           hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-      }
-      setInterval(tick,1000);tick();
-    </script>""", height=32)
-
-    st.markdown("<div style='margin-bottom:10px;'></div>", unsafe_allow_html=True)
 
     # API Key Selector
     key_opts = list(API_KEYS_VALID.keys())
     if key_opts:
-        sel_lbl = st.selectbox("\U0001f511 API Key Aktif:", key_opts, key="selected_api_key_label")
-        kv = API_KEYS_VALID[sel_lbl]
-        masked = f"{kv[:4]}\u2026{kv[-4:]}"
-        st.markdown(
-            f"<div style='background:#0F172A;padding:6px 10px;border-radius:6px;"
-            f"border:1px solid #334155;margin-top:4px;'>"
-            f"<span style='color:#10B981;font-size:.72rem;font-weight:600;'>\u2705 {masked}</span></div>",
-            unsafe_allow_html=True
-        )
+        sel_lbl = st.selectbox("model:", key_opts, key="selected_api_key_label")
     else:
         st.warning("\u26a0\ufe0f Isi API key di app.py")
 
@@ -659,13 +638,7 @@ with st.sidebar:
                     st.rerun()
 
 
-    st.markdown("<hr style='margin:8px 0;border-color:#334155;'>", unsafe_allow_html=True)
-    n_local = len(get_local_files())
-    st.markdown(
-        f"<div style='text-align:center;color:#64748B;font-size:.7rem;'>"
-        f"\U0001f4c2 {n_local} database lokal aktif</div>",
-        unsafe_allow_html=True
-    )
+
 
 # ==========================================
 # 12. CHAT PAGE
