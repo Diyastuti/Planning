@@ -18,10 +18,20 @@ import streamlit.components.v1 as components
 import base64
 from datetime import datetime
 from contextlib import contextmanager
-# pyrefly: ignore [missing-import]
 import plotly.express as px
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+@st.cache_data
+def get_base64_image(file_path):
+    """Membaca file gambar dan mengonversinya ke base64 dengan caching untuk menghindari disk I/O berulang."""
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
+    except Exception:
+        pass
+    return ""
 
 BASE_FOLDER   = "database_chatbot"
 FOLDER_TARGET = os.path.join(BASE_FOLDER, "nasional_datagoid")
@@ -32,9 +42,9 @@ os.makedirs(FOLDER_TARGET, exist_ok=True)
 # 1. API KEYS
 # ==========================================
 API_KEYS_DICT = {
-    " Nusantara 1.0 ": st.secrets["API_KEY_1"],
-    " Nusantara 2.0 ": st.secrets["API_KEY_2"],
-    " Nusantara 3.0 ": st.secrets["API_KEY_3"],
+    " Nusantara 1.0 (Thinking) ": st.secrets["API_KEY_1"],
+    " Nusantara 2.0 (Medium)": st.secrets["API_KEY_2"],
+    " Nusantara 3.0 (Low)": st.secrets["API_KEY_3"],
     # "\U0001f511 Key 2 (Cadangan 1)": "MASUKKAN_API_KEY_2_DI_SINI",
 }
 API_KEYS_VALID = {
@@ -47,7 +57,7 @@ API_KEYS_VALID = {
 # ==========================================
 st.set_page_config(
     page_title="LERES \u2013 Layanan E-Gov Rekomendasi & Edukasi Smart",
-    page_icon="\U0001f6e1\ufe0f",
+    page_icon="assets/icon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -59,23 +69,25 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-.stApp{background:#0F172A;color:#F8FAFC;font-family:'Inter',sans-serif;}
+.stApp{background:var(--background-color);color:var(--text-color);font-family:'Inter',sans-serif;}
 
 section[data-testid="stSidebar"]{
-    background:#1E293B!important;
-    border-right:1px solid #334155;
+    border-right:1px solid rgba(128, 128, 128, 0.2);
     height:100vh!important;
     transition: width 0.3s ease !important;
+    z-index: 999999 !important;
 }
-section[data-testid="stSidebar"][aria-expanded="true"]{
-    min-width:240px!important;
-    max-width:260px!important;
-}
-section[data-testid="stSidebar"][aria-expanded="false"]{
-    min-width:0!important;
-    max-width:0!important;
-    overflow:hidden!important;
-    border-right:none!important;
+@media (min-width: 769px) {
+    section[data-testid="stSidebar"][aria-expanded="true"]{
+        min-width:240px!important;
+        max-width:260px!important;
+    }
+    section[data-testid="stSidebar"][aria-expanded="false"]{
+        min-width:0!important;
+        max-width:0!important;
+        overflow:hidden!important;
+        border-right:none!important;
+    }
 }
 section[data-testid="stSidebar"] > div:first-child{
     overflow-y:auto!important;
@@ -90,7 +102,7 @@ section[data-testid="stSidebar"] h3{margin:0 0 4px 0!important;font-size:1.1rem!
 section[data-testid="stSidebar"] p,
 section[data-testid="stSidebar"] small,
 section[data-testid="stSidebar"] .stCaption{font-size:.72rem!important;margin:0!important;}
-section[data-testid="stSidebar"] hr{margin:6px 0!important;}
+section[data-testid="stSidebar"] hr{margin:6px 0!important;border-color:rgba(128, 128, 128, 0.2)!important;}
 section[data-testid="stSidebar"] .stSelectbox label{font-size:.73rem!important;}
 section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;font-size:.75rem!important;}
 
@@ -99,7 +111,7 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     padding:10px 14px;border-radius:16px 16px 2px 16px;
     margin:6px 0 6px 18%;line-height:1.5;}
 .cb-bot{
-    background:#1E293B;color:#F8FAFC;border:1px solid #334155;
+    background:var(--secondary-background-color);color:var(--text-color);border:1px solid rgba(128, 128, 128, 0.2);
     padding:10px 14px;border-radius:16px 16px 16px 2px;
     margin:6px 18% 6px 0;line-height:1.6;}
 
@@ -159,19 +171,23 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    color: #CBD5E1 !important;
+    color: var(--text-color) !important;
+    opacity: 0.85 !important;
     transition: color .15s !important;
     margin: 0 !important;
     width: 100% !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button:hover {
     background: transparent !important;
-    color: #F8FAFC !important;
+    color: var(--text-color) !important;
+    opacity: 1 !important;
     box-shadow: none !important;
 }
 /* Active item */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="primary"] {
-    color: #F8FAFC !important;
+    background: rgba(99,102,241,0.15) !important;
+    color: var(--text-color) !important;
+    opacity: 1 !important;
     font-weight: 600 !important;
     border-left: 3px solid #6366F1 !important;
     padding-left: 7px !important;
@@ -214,8 +230,8 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Navigation: Chat LERES (Green) ── */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="secondary"] {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
+    background: var(--background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     color: #10B981 !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="primary"] {
@@ -231,8 +247,8 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Navigation: Cek Hoaks (Red) ── */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="secondary"] {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
+    background: var(--background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     color: #EF4444 !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="primary"] {
@@ -248,25 +264,25 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Hoax Checker Styles ── */
 .hoax-card {
-    background: #1E293B !important;
-    border: 1px solid #334155 !important;
+    background: var(--secondary-background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     border-radius: 12px !important;
     padding: 20px !important;
     margin-top: 15px !important;
     margin-bottom: 15px !important;
 }
 .hoax-statement {
-    background: #0F172A !important;
+    background: var(--background-color) !important;
     border-left: 4px solid #6366F1 !important;
     padding: 12px 16px !important;
     border-radius: 4px 8px 8px 4px !important;
     font-style: italic !important;
-    color: #CBD5E1 !important;
+    color: var(--text-color) !important;
     margin-bottom: 15px !important;
 }
 .hoax-explanation {
     line-height: 1.6 !important;
-    color: #F8FAFC !important;
+    color: var(--text-color) !important;
     font-size: 0.92rem !important;
 }
 .hoax-section-title {
@@ -279,6 +295,43 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     margin-bottom: 8px !important;
 }
 
+/* ── Sidebar Fixed Admin Footer ── */
+.sidebar-admin-fixed {
+    position: sticky !important;
+    bottom: -12px !important; /* Offset the parent padding */
+    background: var(--secondary-background-color) !important;
+    padding: 12px 0 5px 0 !important;
+    margin-top: auto !important;
+    border-top: 1px solid rgba(128,128,128,0.2) !important;
+    z-index: 99 !important;
+    width: 100% !important;
+}
+.admin-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: #10B981 !important;
+    color: white !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background 0.2s, transform 0.1s !important;
+    text-align: center !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    border: none !important;
+    text-decoration: none !important;
+}
+.admin-btn:hover {
+    background: #059669 !important;
+    color: white !important;
+}
+.admin-btn:active {
+    transform: scale(0.98) !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -286,34 +339,33 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 # 3. GEMINI CALL
 # ==========================================
 def run_gemini(prompt, system="", json_mode=False):
-    keys = []
     sel = st.session_state.get("selected_api_key_label")
     if sel and sel in API_KEYS_VALID:
-        keys.append(API_KEYS_VALID[sel])
-    for k in API_KEYS_VALID.values():
-        if k not in keys:
-            keys.append(k)
-    env = os.environ.get("GEMINI_API_KEY")
-    if env and env not in keys:
-        keys.append(env)
-    if not keys:
+        key = API_KEYS_VALID[sel]
+    else:
+        # Fallback to env key or first valid key if no selection is set
+        key = os.environ.get("GEMINI_API_KEY")
+        if not key and API_KEYS_VALID:
+            key = list(API_KEYS_VALID.values())[0]
+
+    if not key:
         raise RuntimeError("Tidak ada API key valid.")
 
     gen_cfg = {"response_mime_type": "application/json"} if json_mode else {}
-    last_err = RuntimeError("Semua model gagal.")
-    for key in keys:
-        genai.configure(api_key=key)
-        for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-latest", "gemini-pro"]:
-            try:
-                mdl = genai.GenerativeModel(
-                    model_name=model_name,
-                    generation_config=gen_cfg,
-                    system_instruction=system or None
-                )
-                return mdl.generate_content(prompt).text
-            except Exception as e:
-                last_err = e
-                continue
+    genai.configure(api_key=key)
+
+    last_err = RuntimeError("Model gagal merespons.")
+    for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]:
+        try:
+            mdl = genai.GenerativeModel(
+                model_name=model_name,
+                generation_config=gen_cfg,
+                system_instruction=system or None
+            )
+            return mdl.generate_content(prompt).text
+        except Exception as e:
+            last_err = e
+            continue
     raise last_err
 
 # ==========================================
@@ -453,8 +505,12 @@ KATA_KASAR = {
     "kontol","memek","brengsek","ngentot","jancok","ndasmu",
     "fuck","shit","asshole","bitch","damn"
 }
+# Pre-compile pola regex untuk pencarian profanity yang efisien dan cepat
+RUDE_PATTERN = re.compile(rf"\b({'|'.join(map(re.escape, KATA_KASAR))})\b", re.IGNORECASE)
+
 def is_rude(text):
-    return any(re.search(rf"\b{w}\b", text.lower()) for w in KATA_KASAR)
+    """Memeriksa apakah teks mengandung kata kasar menggunakan satu pencarian regex terkompilasi."""
+    return bool(RUDE_PATTERN.search(text))
 
 def get_button_label(url):
     try:
@@ -471,6 +527,17 @@ def get_button_label(url):
 # ==========================================
 # 7. CHART RENDERER
 # ==========================================
+# Constant theme layout to save memory/allocation and adapt to both light/dark themes
+CHART_THEME_LAYOUT = {
+    "paper_bgcolor": "rgba(0,0,0,0)",
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "font": {"color": "#94A3B8", "family": "Inter, sans-serif"},
+    "margin": {"l": 40, "r": 20, "t": 40, "b": 45},
+    "title": {"font": {"size": 12, "color": "#94A3B8", "weight": "bold"}},
+    "xaxis": {"gridcolor": "rgba(128, 128, 128, 0.2)", "zerolinecolor": "rgba(128, 128, 128, 0.2)", "tickfont": {"size": 9}},
+    "yaxis": {"gridcolor": "rgba(128, 128, 128, 0.2)", "zerolinecolor": "rgba(128, 128, 128, 0.2)", "tickfont": {"size": 9}},
+}
+
 def render_chart(tag_json):
     try:
         cd = json.loads(tag_json)
@@ -492,14 +559,6 @@ def render_chart(tag_json):
         return False
 
     df = pd.DataFrame({"Kategori": labels, "Jumlah": values})
-    theme_layout = {
-        "paper_bgcolor": "#1E293B", "plot_bgcolor": "#1E293B",
-        "font": {"color": "#F8FAFC", "family": "Inter, sans-serif"},
-        "margin": {"l": 40, "r": 20, "t": 40, "b": 45},
-        "title": {"font": {"size": 12, "color": "#F8FAFC", "weight": "bold"}},
-        "xaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
-        "yaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
-    }
 
     if ctype == "line":
         fig = px.line(df, x="Kategori", y="Jumlah", title=title, markers=True)
@@ -513,7 +572,7 @@ def render_chart(tag_json):
                      color_discrete_sequence=["#6366F1"])
         fig.update_traces(marker_line_color="#818CF8", marker_line_width=1, opacity=0.9)
 
-    fig.update_layout(**theme_layout)
+    fig.update_layout(**CHART_THEME_LAYOUT)
     if xlabel:
         fig.update_xaxes(title_text=xlabel, title_font={"size": 10, "color": "#94A3B8"})
     else:
@@ -571,6 +630,90 @@ def render_contact_button(combined_text, key_suffix=""):
         f"| Call Center: **{inst['telp']}**</small>",
         unsafe_allow_html=True
     )
+
+def extract_ai_response_tags(raw_text, default_url="https://data.go.id"):
+    """
+    Ekstrak tag CHART, HOAKS_CHECK, dan SOURCES dari response AI mentah.
+    Mengembalikan dict dengan teks bersih (clean_text), chart_tag, hoax_tag, dan list sources.
+    """
+    chart_tag = ""
+    hoax_tag  = ""
+    sources   = []
+
+    # Extract Chart
+    cm = re.search(r'\[CHART:(\{.*?\})\]', raw_text, re.DOTALL)
+    if cm:
+        chart_tag = cm.group(1)
+        raw_text = raw_text[:cm.start()] + raw_text[cm.end():]
+
+    # Extract Hoax
+    hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw_text, re.DOTALL)
+    if hm:
+        hoax_tag = hm.group(1)
+        raw_text = raw_text[:hm.start()] + raw_text[hm.end():]
+
+    # Extract Sources
+    sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw_text, re.DOTALL)
+    if sm:
+        try:
+            sources = json.loads(sm.group(1))
+        except Exception:
+            sources = []
+        raw_text = raw_text[:sm.start()] + raw_text[sm.end():]
+
+    # Fallback to general URL parser if SOURCES block is empty
+    if not sources:
+        raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw_text)
+        sources  = [u.rstrip('.,;)">\x27') for u in raw_urls]
+        for u in raw_urls:
+            raw_text = raw_text.replace(u, "")
+
+    # Filter only .go.id government sources
+    sources = [u for u in sources if u and ".go.id" in u.lower()]
+    if not sources:
+        sources = [default_url]
+
+    clean_text = re.sub(r'\n{3,}', '\n\n', raw_text).strip()
+    return {
+        "clean_text": clean_text,
+        "chart_tag": chart_tag,
+        "hoax_tag": hoax_tag,
+        "sources": list(dict.fromkeys(sources))[:3]
+    }
+
+def render_bot_response_attachments(chart_tag, urls, hoax_tag, topic_text, key_suffix):
+    """
+    Render semua lampiran (chart, link sumber, tombol aduan instansi, 
+    dan tombol WA/laporan hoaks Kominfo) dari bot chat bubble.
+    """
+    # 1. Render Plotly Chart jika ada
+    if chart_tag:
+        render_chart(chart_tag)
+
+    # 2. Render Sumber Link Resmi (max 3)
+    if urls:
+        for idx, u in enumerate(urls[:3]):
+            lbl = get_button_label(u)
+            st.link_button(lbl, u, key=f"src_{key_suffix}_{idx}")
+
+    # 3. Render Hubungi Call Center Instansi terkait
+    if topic_text:
+        render_contact_button(topic_text, key_suffix=key_suffix)
+
+    # 4. Render Badge Hoaks & Tombol Laporan WA ke Kominfo
+    if hoax_tag:
+        try:
+            hd     = json.loads(hoax_tag)
+            claim  = hd.get("claim", "")
+            status = hd.get("status", "HOAKS").upper()
+            bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
+            st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
+            if status in ("HOAKS", "BUTUH KLARIFIKASI"):
+                txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
+                st.link_button("📱 Laporkan ke Admin (WA)",
+                               f"https://wa.me/62895605210076?text={txt}", key=f"wa_{key_suffix}")
+        except Exception:
+            pass
 
 # ==========================================
 # 9. SQLITE DATABASE LAYER
@@ -785,14 +928,12 @@ _init_app()
 # 11. SIDEBAR \u2014 dengan history permanen
 # ==========================================
 with st.sidebar:
-    # Encode logo sebagai base64 untuk ditampilkan di HTML
-    with open("assets/logolers-Photoroom.png", "rb") as _f:
-        _logo_b64 = base64.b64encode(_f.read()).decode()
+    # Encode logo sebagai base64 untuk ditampilkan di HTML (cached)
+    _logo_b64 = get_base64_image("assets/logoleres.png")
     st.markdown(
-        "<div style='text-align:center;padding:12px 10px;background:#0F172A;border-radius:12px;"
-        "border:1px solid #334155;margin-bottom:10px;'>"
-        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'>"
-        "</div>",
+        "<div style='text-align:center;padding:12px 10px;background:var(--background-color);border-radius:12px;"
+        "border:1px solid rgba(128,128,128,0.2);margin-bottom:10px;'>"
+        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'></div>",
         unsafe_allow_html=True
     )
 
@@ -804,7 +945,7 @@ with st.sidebar:
     else:
         st.warning("⚠️ Isi API key di app.py")
 
-    st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:10px 0;border-color:rgba(128,128,128,0.2);'>", unsafe_allow_html=True)
 
     # Menu Navigasi
     if "page" not in st.session_state:
@@ -890,22 +1031,30 @@ with st.sidebar:
                             st.session_state.hoax_statement = ""
                         st.rerun()
 
-
-
+    # ── Sidebar Fixed Admin Footer ──
+    st.markdown(
+        """<div class='sidebar-admin-fixed'>
+            <a href='https://wa.me/62895605210076?text=Halo%20Admin%20LERES,%20saya%20butuh%20bantuan%20terkait%20informasi%20layanan%20publik.' target='_blank' style='text-decoration:none;'>
+                <div class='admin-btn'>
+                    <span>📱 Hubungi Admin</span>
+                </div>
+            </a>
+        </div>""",
+        unsafe_allow_html=True
+    )
 
 # ==========================================
 # 12. HOAX CHECKER PAGE
 # ==========================================
 if st.session_state.get("page") == "hoax":
-    # Encode logo sebagai base64 untuk ditampilkan di title
-    with open("assets/LOGOCH.png", "rb") as _f:
-        _logo_hx_b64 = base64.b64encode(_f.read()).decode()
+    # Encode logo sebagai base64 untuk ditampilkan di title (cached)
+    _logo_hx_b64 = get_base64_image("assets/LOGOCH.png")
 
     st.markdown(
         f"""
         <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
             <img src="data:image/png;base64,{_logo_hx_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
-            <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES Hoax Checker</h1>
+            <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: var(--text-color); line-height: 1.1;">LERES Hoax Checker</h1>
         </div>
         """,
         unsafe_allow_html=True
@@ -914,8 +1063,8 @@ if st.session_state.get("page") == "hoax":
 
     # Input form
     st.markdown("""
-        <div style='background:#1E293B; padding:15px; border-radius:8px; border:1px solid #334155; margin-bottom:15px;'>
-            <h4 style='margin:0; color:#F8FAFC;'>Masukkan Klaim / Berita</h4>
+        <div style='background:var(--secondary-background-color); padding:15px; border-radius:8px; border:1px solid rgba(128,128,128,0.2); margin-bottom:15px;'>
+            <h4 style='margin:0; color:var(--text-color);'>Masukkan Klaim / Berita</h4>
             <p style='margin:5px 0 0 0; font-size:0.8rem; color:#94A3B8;'>Tempelkan pernyataan atau pesan berantai yang Anda terima untuk memverifikasi kebenarannya.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -971,7 +1120,7 @@ if st.session_state.get("page") == "hoax":
         bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
         badge_text = "🔴 HOAKS" if status == "HOAKS" else ("🟢 VALID" if status == "VALID" else "🟡 BUTUH KLARIFIKASI")
 
-        st.markdown("<hr style='margin:20px 0; border-color:#334155;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:20px 0; border-color:rgba(128,128,128,0.2);'>", unsafe_allow_html=True)
         st.subheader("Hasil Verifikasi")
 
         # Tampilkan pernyataan asal
@@ -1023,15 +1172,14 @@ if st.session_state.get("page") == "hoax":
 # ==========================================
 # 13. CHAT PAGE
 # ==========================================
-# Encode logo sebagai base64 untuk ditampilkan di title
-with open("assets/LOGOCH.png", "rb") as _f:
-    _logo_main_b64 = base64.b64encode(_f.read()).decode()
+# Encode logo sebagai base64 untuk ditampilkan di title (cached)
+_logo_main_b64 = get_base64_image("assets/LOGOCH.png")
 
 st.markdown(
     f"""
     <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
         <img src="data:image/png;base64,{_logo_main_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
-        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES AI</h1>
+        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: var(--text-color); line-height: 1.1;">LERES AI</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -1047,31 +1195,13 @@ for i, msg in enumerate(active_msgs):
     else:
         st.markdown(f'<div class="cb-bot">{msg["content"]}</div>', unsafe_allow_html=True)
 
-        if msg.get("chart_tag"):
-            render_chart(msg["chart_tag"])
-
-        for j, u in enumerate((msg.get("urls") or [])[:3]):
-            lbl = get_button_label(u)
-            st.link_button(lbl, u, key=f"src_{i}_{j}")
-
-        topic_text = msg.get("topic_text", "")
-        if topic_text:
-            render_contact_button(topic_text, key_suffix=str(i))
-
-        hoax_tag = msg.get("hoax_tag", "")
-        if hoax_tag:
-            try:
-                hd     = json.loads(hoax_tag)
-                claim  = hd.get("claim", "")
-                status = hd.get("status", "HOAKS")
-                bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
-                if status in ("HOAKS", "BUTUH KLARIFIKASI"):
-                    txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                    st.link_button("\U0001f4f2 Laporkan ke Kominfo (WA)",
-                                   f"https://wa.me/62895605210076?text={txt}", key=f"wa_{i}")
-            except Exception:
-                pass
+        render_bot_response_attachments(
+            chart_tag=msg.get("chart_tag"),
+            urls=msg.get("urls"),
+            hoax_tag=msg.get("hoax_tag"),
+            topic_text=msg.get("topic_text"),
+            key_suffix=str(i)
+        )
 
 # ==========================================
 # 13. CHAT INPUT PROCESSING
@@ -1129,15 +1259,22 @@ ATURAN:
 
         if api_error is not None:
             err_str = str(api_error).lower()
-            is_quota = "429" in err_str or "resource exhausted" in err_str or "quota" in err_str
+            is_quota = (
+                "429" in err_str
+                or "resource exhausted" in err_str
+                or "quota" in err_str
+                or "404" in err_str
+                or "not found" in err_str
+                or "not supported" in err_str
+            )
             if is_quota:
                 fallback = (
-                    "\u26a0\ufe0f Model sedang over-limit (429 Resource Exhausted).\n\n"
-                    "Silakan ganti model di dropdown model: di sidebar, lalu kirim ulang pertanyaanmu ya!"
+                    "⚠️ Model sedang limit atau tidak tersedia saat ini.\n\n"
+                    "Silakan coba lagi sebentar atau ganti model di dropdown **model:** di sidebar."
                 )
             else:
                 fallback = (
-                    f"\u26a0\ufe0f Gagal hubungi AI: `{api_error}`\n\n"
+                    f"⚠️ Gagal hubungi AI: `{api_error}`\n\n"
                     "Coba ganti model di sidebar atau coba lagi sebentar."
                 )
             st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
@@ -1150,66 +1287,25 @@ ATURAN:
             _append_bot(fallback, urls=["https://data.go.id"])
 
         else:
-            chart_tag = ""
-            hoax_tag  = ""
-            sources   = []
-
-            cm = re.search(r'\[CHART:(\{.*?\})\]', raw, re.DOTALL)
-            if cm:
-                chart_tag = cm.group(1)
-                raw = raw[:cm.start()] + raw[cm.end():]
-
-            hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw, re.DOTALL)
-            if hm:
-                hoax_tag = hm.group(1)
-                raw = raw[:hm.start()] + raw[hm.end():]
-
-            sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw, re.DOTALL)
-            if sm:
-                try:
-                    sources = json.loads(sm.group(1))
-                except Exception:
-                    sources = []
-                raw = raw[:sm.start()] + raw[sm.end():]
-
-            if not sources:
-                raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw)
-                sources  = [u.rstrip('.,;)">\x27') for u in raw_urls]
-                for u in raw_urls:
-                    raw = raw.replace(u, "")
-
-            sources = [u for u in sources if ".go.id" in u.lower()]
-            if not sources:
-                sources = [src_url]
-
-            clean_resp = re.sub(r'\n{3,}', '\n\n', raw).strip()
+            # Parse response tags using helper
+            parsed = extract_ai_response_tags(raw, default_url=src_url)
+            clean_resp = parsed["clean_text"]
+            chart_tag = parsed["chart_tag"]
+            hoax_tag = parsed["hoax_tag"]
+            unique_srcs = parsed["sources"]
 
             st.markdown(f'<div class="cb-bot">{clean_resp}</div>', unsafe_allow_html=True)
 
-            if chart_tag:
-                render_chart(chart_tag)
-
-            unique_srcs = list(dict.fromkeys(sources))[:3]
-            for j, u in enumerate(unique_srcs):
-                lbl = get_button_label(u)
-                st.link_button(lbl, u, key=f"src_new_{j}")
-
             topic_text = user_input + " " + clean_resp
-            render_contact_button(topic_text, key_suffix="new")
 
-            if hoax_tag:
-                try:
-                    hd     = json.loads(hoax_tag)
-                    claim  = hd.get("claim", "")
-                    status = hd.get("status", "HOAKS")
-                    bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                    st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
-                    if status in ("HOAKS", "BUTUH KLARIFIKASI"):
-                        txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                        st.link_button(" Laporkan ke Admin (WA)",
-                                       f"https://wa.me/62895605210076?text={txt}", key="wa_new")
-                except Exception:
-                    pass
+            # Render attachments using unified helper
+            render_bot_response_attachments(
+                chart_tag=chart_tag,
+                urls=unique_srcs,
+                hoax_tag=hoax_tag,
+                topic_text=topic_text,
+                key_suffix="new"
+            )
 
             _append_bot(clean_resp, urls=unique_srcs, chart_tag=chart_tag,
                         hoax_tag=hoax_tag, topic_text=topic_text)
