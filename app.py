@@ -23,6 +23,17 @@ import plotly.express as px
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+@st.cache_data
+def get_base64_image(file_path):
+    """Membaca file gambar dan mengonversinya ke base64 dengan caching untuk menghindari disk I/O berulang."""
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
+    except Exception:
+        pass
+    return ""
+
 BASE_FOLDER   = "database_chatbot"
 FOLDER_TARGET = os.path.join(BASE_FOLDER, "nasional_datagoid")
 DB_PATH       = os.path.join(BASE_FOLDER, "leres_history.db")
@@ -459,8 +470,12 @@ KATA_KASAR = {
     "kontol","memek","brengsek","ngentot","jancok","ndasmu",
     "fuck","shit","asshole","bitch","damn"
 }
+# Pre-compile pola regex untuk pencarian profanity yang efisien dan cepat
+RUDE_PATTERN = re.compile(rf"\b({'|'.join(map(re.escape, KATA_KASAR))})\b", re.IGNORECASE)
+
 def is_rude(text):
-    return any(re.search(rf"\b{w}\b", text.lower()) for w in KATA_KASAR)
+    """Memeriksa apakah teks mengandung kata kasar menggunakan satu pencarian regex terkompilasi."""
+    return bool(RUDE_PATTERN.search(text))
 
 def get_button_label(url):
     try:
@@ -477,6 +492,17 @@ def get_button_label(url):
 # ==========================================
 # 7. CHART RENDERER
 # ==========================================
+# Constant theme layout to save memory/allocation and adapt to both light/dark themes
+CHART_THEME_LAYOUT = {
+    "paper_bgcolor": "rgba(0,0,0,0)",
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "font": {"color": "#94A3B8", "family": "Inter, sans-serif"},
+    "margin": {"l": 40, "r": 20, "t": 40, "b": 45},
+    "title": {"font": {"size": 12, "color": "#94A3B8", "weight": "bold"}},
+    "xaxis": {"gridcolor": "rgba(128, 128, 128, 0.2)", "zerolinecolor": "rgba(128, 128, 128, 0.2)", "tickfont": {"size": 9}},
+    "yaxis": {"gridcolor": "rgba(128, 128, 128, 0.2)", "zerolinecolor": "rgba(128, 128, 128, 0.2)", "tickfont": {"size": 9}},
+}
+
 def render_chart(tag_json):
     try:
         cd = json.loads(tag_json)
@@ -498,14 +524,6 @@ def render_chart(tag_json):
         return False
 
     df = pd.DataFrame({"Kategori": labels, "Jumlah": values})
-    theme_layout = {
-        "paper_bgcolor": "#1E293B", "plot_bgcolor": "#1E293B",
-        "font": {"color": "#F8FAFC", "family": "Inter, sans-serif"},
-        "margin": {"l": 40, "r": 20, "t": 40, "b": 45},
-        "title": {"font": {"size": 12, "color": "#F8FAFC", "weight": "bold"}},
-        "xaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
-        "yaxis": {"gridcolor": "#334155", "zerolinecolor": "#334155", "tickfont": {"size": 9}},
-    }
 
     if ctype == "line":
         fig = px.line(df, x="Kategori", y="Jumlah", title=title, markers=True)
@@ -519,7 +537,7 @@ def render_chart(tag_json):
                      color_discrete_sequence=["#6366F1"])
         fig.update_traces(marker_line_color="#818CF8", marker_line_width=1, opacity=0.9)
 
-    fig.update_layout(**theme_layout)
+    fig.update_layout(**CHART_THEME_LAYOUT)
     if xlabel:
         fig.update_xaxes(title_text=xlabel, title_font={"size": 10, "color": "#94A3B8"})
     else:
@@ -577,6 +595,90 @@ def render_contact_button(combined_text, key_suffix=""):
         f"| Call Center: **{inst['telp']}**</small>",
         unsafe_allow_html=True
     )
+
+def extract_ai_response_tags(raw_text, default_url="https://data.go.id"):
+    """
+    Ekstrak tag CHART, HOAKS_CHECK, dan SOURCES dari response AI mentah.
+    Mengembalikan dict dengan teks bersih (clean_text), chart_tag, hoax_tag, dan list sources.
+    """
+    chart_tag = ""
+    hoax_tag  = ""
+    sources   = []
+
+    # Extract Chart
+    cm = re.search(r'\[CHART:(\{.*?\})\]', raw_text, re.DOTALL)
+    if cm:
+        chart_tag = cm.group(1)
+        raw_text = raw_text[:cm.start()] + raw_text[cm.end():]
+
+    # Extract Hoax
+    hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw_text, re.DOTALL)
+    if hm:
+        hoax_tag = hm.group(1)
+        raw_text = raw_text[:hm.start()] + raw_text[hm.end():]
+
+    # Extract Sources
+    sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw_text, re.DOTALL)
+    if sm:
+        try:
+            sources = json.loads(sm.group(1))
+        except Exception:
+            sources = []
+        raw_text = raw_text[:sm.start()] + raw_text[sm.end():]
+
+    # Fallback to general URL parser if SOURCES block is empty
+    if not sources:
+        raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw_text)
+        sources  = [u.rstrip('.,;)">\x27') for u in raw_urls]
+        for u in raw_urls:
+            raw_text = raw_text.replace(u, "")
+
+    # Filter only .go.id government sources
+    sources = [u for u in sources if u and ".go.id" in u.lower()]
+    if not sources:
+        sources = [default_url]
+
+    clean_text = re.sub(r'\n{3,}', '\n\n', raw_text).strip()
+    return {
+        "clean_text": clean_text,
+        "chart_tag": chart_tag,
+        "hoax_tag": hoax_tag,
+        "sources": list(dict.fromkeys(sources))[:3]
+    }
+
+def render_bot_response_attachments(chart_tag, urls, hoax_tag, topic_text, key_suffix):
+    """
+    Render semua lampiran (chart, link sumber, tombol aduan instansi, 
+    dan tombol WA/laporan hoaks Kominfo) dari bot chat bubble.
+    """
+    # 1. Render Plotly Chart jika ada
+    if chart_tag:
+        render_chart(chart_tag)
+
+    # 2. Render Sumber Link Resmi (max 3)
+    if urls:
+        for idx, u in enumerate(urls[:3]):
+            lbl = get_button_label(u)
+            st.link_button(lbl, u, key=f"src_{key_suffix}_{idx}")
+
+    # 3. Render Hubungi Call Center Instansi terkait
+    if topic_text:
+        render_contact_button(topic_text, key_suffix=key_suffix)
+
+    # 4. Render Badge Hoaks & Tombol Laporan WA ke Kominfo
+    if hoax_tag:
+        try:
+            hd     = json.loads(hoax_tag)
+            claim  = hd.get("claim", "")
+            status = hd.get("status", "HOAKS").upper()
+            bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
+            st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
+            if status in ("HOAKS", "BUTUH KLARIFIKASI"):
+                txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
+                st.link_button("📱 Laporkan ke Admin (WA)",
+                               f"https://wa.me/62895605210076?text={txt}", key=f"wa_{key_suffix}")
+        except Exception:
+            pass
 
 # ==========================================
 # 9. SQLITE DATABASE LAYER
@@ -791,13 +893,12 @@ _init_app()
 # 11. SIDEBAR \u2014 dengan history permanen
 # ==========================================
 with st.sidebar:
-    # Encode logo sebagai base64 untuk ditampilkan di HTML
-    with open("assets/logolers-Photoroom.png", "rb") as _f:
-        _logo_b64 = base64.b64encode(_f.read()).decode()
+    # Encode logo sebagai base64 untuk ditampilkan di HTML (cached)
+    _logo_b64 = get_base64_image("assets/logolers-Photoroom.png")
     st.markdown(
         "<div style='text-align:center;padding:12px 10px;background:var(--background-color);border-radius:12px;"
         "border:1px solid rgba(128,128,128,0.2);margin-bottom:10px;'>"
-        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'>""</div>",
+        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'></div>",
         unsafe_allow_html=True
     )
 
@@ -902,9 +1003,8 @@ with st.sidebar:
 # 12. HOAX CHECKER PAGE
 # ==========================================
 if st.session_state.get("page") == "hoax":
-    # Encode logo sebagai base64 untuk ditampilkan di title
-    with open("assets/LOGOCH.png", "rb") as _f:
-        _logo_hx_b64 = base64.b64encode(_f.read()).decode()
+    # Encode logo sebagai base64 untuk ditampilkan di title (cached)
+    _logo_hx_b64 = get_base64_image("assets/LOGOCH.png")
 
     st.markdown(
         f"""
@@ -1028,9 +1128,8 @@ if st.session_state.get("page") == "hoax":
 # ==========================================
 # 13. CHAT PAGE
 # ==========================================
-# Encode logo sebagai base64 untuk ditampilkan di title
-with open("assets/LOGOCH.png", "rb") as _f:
-    _logo_main_b64 = base64.b64encode(_f.read()).decode()
+# Encode logo sebagai base64 untuk ditampilkan di title (cached)
+_logo_main_b64 = get_base64_image("assets/LOGOCH.png")
 
 st.markdown(
     f"""
@@ -1052,31 +1151,13 @@ for i, msg in enumerate(active_msgs):
     else:
         st.markdown(f'<div class="cb-bot">{msg["content"]}</div>', unsafe_allow_html=True)
 
-        if msg.get("chart_tag"):
-            render_chart(msg["chart_tag"])
-
-        for j, u in enumerate((msg.get("urls") or [])[:3]):
-            lbl = get_button_label(u)
-            st.link_button(lbl, u, key=f"src_{i}_{j}")
-
-        topic_text = msg.get("topic_text", "")
-        if topic_text:
-            render_contact_button(topic_text, key_suffix=str(i))
-
-        hoax_tag = msg.get("hoax_tag", "")
-        if hoax_tag:
-            try:
-                hd     = json.loads(hoax_tag)
-                claim  = hd.get("claim", "")
-                status = hd.get("status", "HOAKS")
-                bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
-                if status in ("HOAKS", "BUTUH KLARIFIKASI"):
-                    txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                    st.link_button("\U0001f4f2 Laporkan ke Kominfo (WA)",
-                                   f"https://wa.me/62895605210076?text={txt}", key=f"wa_{i}")
-            except Exception:
-                pass
+        render_bot_response_attachments(
+            chart_tag=msg.get("chart_tag"),
+            urls=msg.get("urls"),
+            hoax_tag=msg.get("hoax_tag"),
+            topic_text=msg.get("topic_text"),
+            key_suffix=str(i)
+        )
 
 # ==========================================
 # 13. CHAT INPUT PROCESSING
@@ -1162,66 +1243,25 @@ ATURAN:
             _append_bot(fallback, urls=["https://data.go.id"])
 
         else:
-            chart_tag = ""
-            hoax_tag  = ""
-            sources   = []
-
-            cm = re.search(r'\[CHART:(\{.*?\})\]', raw, re.DOTALL)
-            if cm:
-                chart_tag = cm.group(1)
-                raw = raw[:cm.start()] + raw[cm.end():]
-
-            hm = re.search(r'\[HOAKS_CHECK:(\{.*?\})\]', raw, re.DOTALL)
-            if hm:
-                hoax_tag = hm.group(1)
-                raw = raw[:hm.start()] + raw[hm.end():]
-
-            sm = re.search(r'\[SOURCES:(\[.*?\])\]', raw, re.DOTALL)
-            if sm:
-                try:
-                    sources = json.loads(sm.group(1))
-                except Exception:
-                    sources = []
-                raw = raw[:sm.start()] + raw[sm.end():]
-
-            if not sources:
-                raw_urls = re.findall(r'https?://[^\s\)\]>"\']+', raw)
-                sources  = [u.rstrip('.,;)">\x27') for u in raw_urls]
-                for u in raw_urls:
-                    raw = raw.replace(u, "")
-
-            sources = [u for u in sources if ".go.id" in u.lower()]
-            if not sources:
-                sources = [src_url]
-
-            clean_resp = re.sub(r'\n{3,}', '\n\n', raw).strip()
+            # Parse response tags using helper
+            parsed = extract_ai_response_tags(raw, default_url=src_url)
+            clean_resp = parsed["clean_text"]
+            chart_tag = parsed["chart_tag"]
+            hoax_tag = parsed["hoax_tag"]
+            unique_srcs = parsed["sources"]
 
             st.markdown(f'<div class="cb-bot">{clean_resp}</div>', unsafe_allow_html=True)
 
-            if chart_tag:
-                render_chart(chart_tag)
-
-            unique_srcs = list(dict.fromkeys(sources))[:3]
-            for j, u in enumerate(unique_srcs):
-                lbl = get_button_label(u)
-                st.link_button(lbl, u, key=f"src_new_{j}")
-
             topic_text = user_input + " " + clean_resp
-            render_contact_button(topic_text, key_suffix="new")
 
-            if hoax_tag:
-                try:
-                    hd     = json.loads(hoax_tag)
-                    claim  = hd.get("claim", "")
-                    status = hd.get("status", "HOAKS")
-                    bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
-                    st.markdown(f'<span class="badge {bclass}">{status}</span>', unsafe_allow_html=True)
-                    if status in ("HOAKS", "BUTUH KLARIFIKASI"):
-                        txt = urllib.parse.quote(f'Laporan hoaks:\n"{claim}"\nMohon ditindaklanjuti.')
-                        st.link_button(" Laporkan ke Admin (WA)",
-                                       f"https://wa.me/62895605210076?text={txt}", key="wa_new")
-                except Exception:
-                    pass
+            # Render attachments using unified helper
+            render_bot_response_attachments(
+                chart_tag=chart_tag,
+                urls=unique_srcs,
+                hoax_tag=hoax_tag,
+                topic_text=topic_text,
+                key_suffix="new"
+            )
 
             _append_bot(clean_resp, urls=unique_srcs, chart_tag=chart_tag,
                         hoax_tag=hoax_tag, topic_text=topic_text)
