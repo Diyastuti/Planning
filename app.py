@@ -18,7 +18,6 @@ import streamlit.components.v1 as components
 import base64
 from datetime import datetime
 from contextlib import contextmanager
-# pyrefly: ignore [missing-import]
 import plotly.express as px
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
