@@ -295,6 +295,43 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     margin-bottom: 8px !important;
 }
 
+/* ── Sidebar Fixed Admin Footer ── */
+.sidebar-admin-fixed {
+    position: sticky !important;
+    bottom: -12px !important; /* Offset the parent padding */
+    background: var(--secondary-background-color) !important;
+    padding: 12px 0 5px 0 !important;
+    margin-top: auto !important;
+    border-top: 1px solid rgba(128,128,128,0.2) !important;
+    z-index: 99 !important;
+    width: 100% !important;
+}
+.admin-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    background: #10B981 !important;
+    color: white !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background 0.2s, transform 0.1s !important;
+    text-align: center !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    border: none !important;
+    text-decoration: none !important;
+}
+.admin-btn:hover {
+    background: #059669 !important;
+    color: white !important;
+}
+.admin-btn:active {
+    transform: scale(0.98) !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -995,8 +1032,17 @@ with st.sidebar:
                             st.session_state.hoax_statement = ""
                         st.rerun()
 
-
-
+    # ── Sidebar Fixed Admin Footer ──
+    st.markdown(
+        """<div class='sidebar-admin-fixed'>
+            <a href='https://wa.me/62895605210076?text=Halo%20Admin%20LERES,%20saya%20butuh%20bantuan%20terkait%20informasi%20layanan%20publik.' target='_blank' style='text-decoration:none;'>
+                <div class='admin-btn'>
+                    <span>📱 Hubungi Admin</span>
+                </div>
+            </a>
+        </div>""",
+        unsafe_allow_html=True
+    )
 
 # ==========================================
 # 12. HOAX CHECKER PAGE
