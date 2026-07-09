@@ -339,34 +339,33 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 # 3. GEMINI CALL
 # ==========================================
 def run_gemini(prompt, system="", json_mode=False):
-    keys = []
     sel = st.session_state.get("selected_api_key_label")
     if sel and sel in API_KEYS_VALID:
-        keys.append(API_KEYS_VALID[sel])
-    for k in API_KEYS_VALID.values():
-        if k not in keys:
-            keys.append(k)
-    env = os.environ.get("GEMINI_API_KEY")
-    if env and env not in keys:
-        keys.append(env)
-    if not keys:
+        key = API_KEYS_VALID[sel]
+    else:
+        # Fallback to env key or first valid key if no selection is set
+        key = os.environ.get("GEMINI_API_KEY")
+        if not key and API_KEYS_VALID:
+            key = list(API_KEYS_VALID.values())[0]
+
+    if not key:
         raise RuntimeError("Tidak ada API key valid.")
 
     gen_cfg = {"response_mime_type": "application/json"} if json_mode else {}
-    last_err = RuntimeError("Semua model gagal.")
-    for key in keys:
-        genai.configure(api_key=key)
-        for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]:
-            try:
-                mdl = genai.GenerativeModel(
-                    model_name=model_name,
-                    generation_config=gen_cfg,
-                    system_instruction=system or None
-                )
-                return mdl.generate_content(prompt).text
-            except Exception as e:
-                last_err = e
-                continue
+    genai.configure(api_key=key)
+
+    last_err = RuntimeError("Model gagal merespons.")
+    for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]:
+        try:
+            mdl = genai.GenerativeModel(
+                model_name=model_name,
+                generation_config=gen_cfg,
+                system_instruction=system or None
+            )
+            return mdl.generate_content(prompt).text
+        except Exception as e:
+            last_err = e
+            continue
     raise last_err
 
 # ==========================================
