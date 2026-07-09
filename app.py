@@ -32,9 +32,9 @@ os.makedirs(FOLDER_TARGET, exist_ok=True)
 # 1. API KEYS
 # ==========================================
 API_KEYS_DICT = {
-    " Nusantara 1.0 ": st.secrets["API_KEY_1"],
-    " Nusantara 2.0 ": st.secrets["API_KEY_2"],
-    " Nusantara 3.0 ": st.secrets["API_KEY_3"],
+    " Nusantara 1.0 (Thinking) ": st.secrets["API_KEY_1"],
+    " Nusantara 2.0 (Medium)": st.secrets["API_KEY_2"],
+    " Nusantara 3.0 (Low)": st.secrets["API_KEY_3"],
     # "\U0001f511 Key 2 (Cadangan 1)": "MASUKKAN_API_KEY_2_DI_SINI",
 }
 API_KEYS_VALID = {
@@ -47,7 +47,7 @@ API_KEYS_VALID = {
 # ==========================================
 st.set_page_config(
     page_title="LERES \u2013 Layanan E-Gov Rekomendasi & Edukasi Smart",
-    page_icon="\U0001f6e1\ufe0f",
+    page_icon="assets/icon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
