@@ -59,23 +59,25 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-.stApp{background:#0F172A;color:#F8FAFC;font-family:'Inter',sans-serif;}
+.stApp{background:var(--background-color);color:var(--text-color);font-family:'Inter',sans-serif;}
 
 section[data-testid="stSidebar"]{
-    background:#1E293B!important;
-    border-right:1px solid #334155;
+    border-right:1px solid rgba(128, 128, 128, 0.2);
     height:100vh!important;
     transition: width 0.3s ease !important;
+    z-index: 999999 !important;
 }
-section[data-testid="stSidebar"][aria-expanded="true"]{
-    min-width:240px!important;
-    max-width:260px!important;
-}
-section[data-testid="stSidebar"][aria-expanded="false"]{
-    min-width:0!important;
-    max-width:0!important;
-    overflow:hidden!important;
-    border-right:none!important;
+@media (min-width: 769px) {
+    section[data-testid="stSidebar"][aria-expanded="true"]{
+        min-width:240px!important;
+        max-width:260px!important;
+    }
+    section[data-testid="stSidebar"][aria-expanded="false"]{
+        min-width:0!important;
+        max-width:0!important;
+        overflow:hidden!important;
+        border-right:none!important;
+    }
 }
 section[data-testid="stSidebar"] > div:first-child{
     overflow-y:auto!important;
@@ -90,7 +92,7 @@ section[data-testid="stSidebar"] h3{margin:0 0 4px 0!important;font-size:1.1rem!
 section[data-testid="stSidebar"] p,
 section[data-testid="stSidebar"] small,
 section[data-testid="stSidebar"] .stCaption{font-size:.72rem!important;margin:0!important;}
-section[data-testid="stSidebar"] hr{margin:6px 0!important;}
+section[data-testid="stSidebar"] hr{margin:6px 0!important;border-color:rgba(128, 128, 128, 0.2)!important;}
 section[data-testid="stSidebar"] .stSelectbox label{font-size:.73rem!important;}
 section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;font-size:.75rem!important;}
 
@@ -99,7 +101,7 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     padding:10px 14px;border-radius:16px 16px 2px 16px;
     margin:6px 0 6px 18%;line-height:1.5;}
 .cb-bot{
-    background:#1E293B;color:#F8FAFC;border:1px solid #334155;
+    background:var(--secondary-background-color);color:var(--text-color);border:1px solid rgba(128, 128, 128, 0.2);
     padding:10px 14px;border-radius:16px 16px 16px 2px;
     margin:6px 18% 6px 0;line-height:1.6;}
 
@@ -159,19 +161,23 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    color: #CBD5E1 !important;
+    color: var(--text-color) !important;
+    opacity: 0.85 !important;
     transition: color .15s !important;
     margin: 0 !important;
     width: 100% !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button:hover {
     background: transparent !important;
-    color: #F8FAFC !important;
+    color: var(--text-color) !important;
+    opacity: 1 !important;
     box-shadow: none !important;
 }
 /* Active item */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:not(:first-of-type) [data-testid="column"]:first-child button[kind="primary"] {
-    color: #F8FAFC !important;
+    background: rgba(99,102,241,0.15) !important;
+    color: var(--text-color) !important;
+    opacity: 1 !important;
     font-weight: 600 !important;
     border-left: 3px solid #6366F1 !important;
     padding-left: 7px !important;
@@ -214,8 +220,8 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Navigation: Chat LERES (Green) ── */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="secondary"] {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
+    background: var(--background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     color: #10B981 !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-child button[kind="primary"] {
@@ -231,8 +237,8 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Navigation: Cek Hoaks (Red) ── */
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="secondary"] {
-    background: #0F172A !important;
-    border: 1px solid #334155 !important;
+    background: var(--background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     color: #EF4444 !important;
 }
 [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-child button[kind="primary"] {
@@ -248,25 +254,25 @@ section[data-testid="stSidebar"] .stButton button{padding:4px 10px!important;fon
 
 /* ── Hoax Checker Styles ── */
 .hoax-card {
-    background: #1E293B !important;
-    border: 1px solid #334155 !important;
+    background: var(--secondary-background-color) !important;
+    border: 1px solid rgba(128, 128, 128, 0.2) !important;
     border-radius: 12px !important;
     padding: 20px !important;
     margin-top: 15px !important;
     margin-bottom: 15px !important;
 }
 .hoax-statement {
-    background: #0F172A !important;
+    background: var(--background-color) !important;
     border-left: 4px solid #6366F1 !important;
     padding: 12px 16px !important;
     border-radius: 4px 8px 8px 4px !important;
     font-style: italic !important;
-    color: #CBD5E1 !important;
+    color: var(--text-color) !important;
     margin-bottom: 15px !important;
 }
 .hoax-explanation {
     line-height: 1.6 !important;
-    color: #F8FAFC !important;
+    color: var(--text-color) !important;
     font-size: 0.92rem !important;
 }
 .hoax-section-title {
@@ -303,7 +309,7 @@ def run_gemini(prompt, system="", json_mode=False):
     last_err = RuntimeError("Semua model gagal.")
     for key in keys:
         genai.configure(api_key=key)
-        for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-latest", "gemini-pro"]:
+        for model_name in ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]:
             try:
                 mdl = genai.GenerativeModel(
                     model_name=model_name,
@@ -789,10 +795,9 @@ with st.sidebar:
     with open("assets/logolers-Photoroom.png", "rb") as _f:
         _logo_b64 = base64.b64encode(_f.read()).decode()
     st.markdown(
-        "<div style='text-align:center;padding:12px 10px;background:#0F172A;border-radius:12px;"
-        "border:1px solid #334155;margin-bottom:10px;'>"
-        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'>"
-        "</div>",
+        "<div style='text-align:center;padding:12px 10px;background:var(--background-color);border-radius:12px;"
+        "border:1px solid rgba(128,128,128,0.2);margin-bottom:10px;'>"
+        f"<img src='data:image/png;base64,{_logo_b64}' style='width:100%;object-fit:contain;border-radius:8px;'>""</div>",
         unsafe_allow_html=True
     )
 
@@ -804,7 +809,7 @@ with st.sidebar:
     else:
         st.warning("⚠️ Isi API key di app.py")
 
-    st.markdown("<hr style='margin:10px 0;border-color:#334155;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:10px 0;border-color:rgba(128,128,128,0.2);'>", unsafe_allow_html=True)
 
     # Menu Navigasi
     if "page" not in st.session_state:
@@ -905,7 +910,7 @@ if st.session_state.get("page") == "hoax":
         f"""
         <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
             <img src="data:image/png;base64,{_logo_hx_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
-            <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES Hoax Checker</h1>
+            <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: var(--text-color); line-height: 1.1;">LERES Hoax Checker</h1>
         </div>
         """,
         unsafe_allow_html=True
@@ -914,8 +919,8 @@ if st.session_state.get("page") == "hoax":
 
     # Input form
     st.markdown("""
-        <div style='background:#1E293B; padding:15px; border-radius:8px; border:1px solid #334155; margin-bottom:15px;'>
-            <h4 style='margin:0; color:#F8FAFC;'>Masukkan Klaim / Berita</h4>
+        <div style='background:var(--secondary-background-color); padding:15px; border-radius:8px; border:1px solid rgba(128,128,128,0.2); margin-bottom:15px;'>
+            <h4 style='margin:0; color:var(--text-color);'>Masukkan Klaim / Berita</h4>
             <p style='margin:5px 0 0 0; font-size:0.8rem; color:#94A3B8;'>Tempelkan pernyataan atau pesan berantai yang Anda terima untuk memverifikasi kebenarannya.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -971,7 +976,7 @@ if st.session_state.get("page") == "hoax":
         bclass = "b-hoaks" if status == "HOAKS" else ("b-valid" if status == "VALID" else "b-unclear")
         badge_text = "🔴 HOAKS" if status == "HOAKS" else ("🟢 VALID" if status == "VALID" else "🟡 BUTUH KLARIFIKASI")
 
-        st.markdown("<hr style='margin:20px 0; border-color:#334155;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:20px 0; border-color:rgba(128,128,128,0.2);'>", unsafe_allow_html=True)
         st.subheader("Hasil Verifikasi")
 
         # Tampilkan pernyataan asal
@@ -1031,7 +1036,7 @@ st.markdown(
     f"""
     <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
         <img src="data:image/png;base64,{_logo_main_b64}" style="width: 160px; height: 160px; object-fit: contain; margin: -40px -25px -40px -40px;">
-        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: #F8FAFC; line-height: 1.1;">LERES AI</h1>
+        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 700; color: var(--text-color); line-height: 1.1;">LERES AI</h1>
     </div>
     """,
     unsafe_allow_html=True
@@ -1129,15 +1134,22 @@ ATURAN:
 
         if api_error is not None:
             err_str = str(api_error).lower()
-            is_quota = "429" in err_str or "resource exhausted" in err_str or "quota" in err_str
+            is_quota = (
+                "429" in err_str
+                or "resource exhausted" in err_str
+                or "quota" in err_str
+                or "404" in err_str
+                or "not found" in err_str
+                or "not supported" in err_str
+            )
             if is_quota:
                 fallback = (
-                    "\u26a0\ufe0f Model sedang over-limit (429 Resource Exhausted).\n\n"
-                    "Silakan ganti model di dropdown model: di sidebar, lalu kirim ulang pertanyaanmu ya!"
+                    "⚠️ Model sedang limit atau tidak tersedia saat ini.\n\n"
+                    "Silakan coba lagi sebentar atau ganti model di dropdown **model:** di sidebar."
                 )
             else:
                 fallback = (
-                    f"\u26a0\ufe0f Gagal hubungi AI: `{api_error}`\n\n"
+                    f"⚠️ Gagal hubungi AI: `{api_error}`\n\n"
                     "Coba ganti model di sidebar atau coba lagi sebentar."
                 )
             st.markdown(f'<div class="cb-bot">{fallback}</div>', unsafe_allow_html=True)
