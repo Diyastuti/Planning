@@ -893,7 +893,7 @@ _init_app()
 # ==========================================
 with st.sidebar:
     # Encode logo sebagai base64 untuk ditampilkan di HTML (cached)
-    _logo_b64 = get_base64_image("assets/logolers-Photoroom.png")
+    _logo_b64 = get_base64_image("assets/logoleres.png")
     st.markdown(
         "<div style='text-align:center;padding:12px 10px;background:var(--background-color);border-radius:12px;"
         "border:1px solid rgba(128,128,128,0.2);margin-bottom:10px;'>"
